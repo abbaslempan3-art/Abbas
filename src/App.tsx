@@ -1,3 +1,13 @@
+import { ToolDirectory } from "./features/Directory";
+import {
+  Executive,
+  Finance,
+  ContentPlanner,
+  Workflows,
+  IntegrationSettings,
+} from "./features/Business";
+import { useBusiness } from "./features/useBusiness";
+import { businesses } from "./features/catalog";
 import { useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard,
@@ -16,12 +26,17 @@ import {
   ArrowRight,
   Pencil,
   Trash2,
+  Wallet,
+  CalendarDays,
+  Workflow,
+  Settings,
 } from "lucide-react";
 
 type Project = {
   id: string;
   name: string;
   description: string;
+  business?: string;
   status: string;
 };
 type Task = {
@@ -35,7 +50,16 @@ type Task = {
 type Customer = { id: string; name: string; company: string; status: string };
 type Data = { projects: Project[]; tasks: Task[]; customers: Customer[] };
 type Page =
-  "overview" | "projects" | "tasks" | "customers" | "tools" | "reports";
+  | "overview"
+  | "projects"
+  | "tasks"
+  | "customers"
+  | "tools"
+  | "reports"
+  | "finance"
+  | "content"
+  | "workflows"
+  | "settings";
 const key = "abbas-command-center-v1";
 const today = () => new Date().toLocaleDateString("en-CA");
 const seed: Data = {
@@ -138,6 +162,7 @@ function validData(value: unknown): value is Data {
     d.projects.every(
       (p) =>
         p &&
+        (p.business === undefined || typeof p.business === "string") &&
         ["id", "name", "description", "status"].every(
           (k) => typeof p[k as keyof Project] === "string",
         ),
@@ -179,7 +204,11 @@ const nav = [
   { id: "tasks", label: "งานทั้งหมด", icon: ListTodo },
   { id: "customers", label: "ลูกค้า CRM", icon: Users },
   { id: "tools", label: "เครื่องมือ AI", icon: Sparkles },
+  { id: "finance", label: "รายรับและต้นทุน", icon: Wallet },
+  { id: "content", label: "แผนคอนเทนต์", icon: CalendarDays },
+  { id: "workflows", label: "Workflow จำลอง", icon: Workflow },
   { id: "reports", label: "รายงาน", icon: ChartNoAxesCombined },
+  { id: "settings", label: "การเชื่อมต่อและตั้งค่า", icon: Settings },
 ] as const;
 const projectStates = ["วางแผน", "กำลังดำเนินการ", "เสร็จแล้ว"];
 const taskStates = ["รอดำเนินการ", "กำลังทำ", "เสร็จแล้ว"];
@@ -205,6 +234,7 @@ function Badge({ value }: { value: string }) {
   );
 }
 export default function App() {
+  const businessStore = useBusiness();
   const [initial] = useState(load);
   const [data, setData] = useState(initial.data);
   const [error, setError] = useState(initial.error);
@@ -230,6 +260,7 @@ export default function App() {
     setPage(p);
     setQuery("");
     setMobile(false);
+    window.scrollTo(0, 0);
   };
   const done = data.tasks.filter((t) => t.status === "เสร็จแล้ว").length;
   const pending = data.tasks.length - done;
@@ -397,7 +428,7 @@ export default function App() {
           <span className="version">V1</span>
         </div>
         <div className="nav-label">พื้นที่ทำงาน</div>
-        <nav>
+        <nav id="workspace-navigation">
           {nav.map((n) => (
             <button
               key={n.id}
@@ -437,6 +468,8 @@ export default function App() {
               className="mobile-toggle"
               onClick={() => setMobile(!mobile)}
               aria-label="เปิดเมนู"
+              aria-expanded={mobile}
+              aria-controls="workspace-navigation"
             >
               <Menu size={21} />
             </button>
@@ -468,32 +501,42 @@ export default function App() {
                   : "จัดการทุกความคืบหน้า ในพื้นที่เดียว"}
               </p>
             </div>
-            <button
-              className="primary"
-              onClick={() =>
-                setModal({
-                  kind:
-                    page === "customers"
-                      ? "customers"
-                      : page === "tasks"
-                        ? "tasks"
-                        : "projects",
-                })
-              }
-            >
-              <Plus size={18} />
-              {page === "customers"
-                ? "เพิ่มลูกค้า"
-                : page === "tasks"
-                  ? "เพิ่มงาน"
-                  : "สร้างโครงการ"}
-            </button>
+            {["overview", "projects", "tasks", "customers", "reports"].includes(
+              page,
+            ) && (
+              <button
+                className="primary"
+                onClick={() =>
+                  setModal({
+                    kind:
+                      page === "customers"
+                        ? "customers"
+                        : page === "tasks"
+                          ? "tasks"
+                          : "projects",
+                  })
+                }
+              >
+                <Plus size={18} />
+                {page === "customers"
+                  ? "เพิ่มลูกค้า"
+                  : page === "tasks"
+                    ? "เพิ่มงาน"
+                    : "สร้างโครงการ"}
+              </button>
+            )}
           </div>
           {error && (
             <div role="alert" className="error">
               {error}
             </div>
           )}
+          {businessStore.error && (
+            <div role="alert" className="error">
+              {businessStore.error}
+            </div>
+          )}
+          {page === "overview" && <Executive store={businessStore} />}
           {page === "overview" && (
             <>
               <div className="welcome">
@@ -607,6 +650,9 @@ export default function App() {
                         <Badge value={p.status} />
                       </div>
                       <h3>{p.name}</h3>
+                      {p.business && (
+                        <small className="project-business">{p.business}</small>
+                      )}
                       <p>{p.description || "ยังไม่มีรายละเอียดโครงการ"}</p>
                       <div className="progress-label">
                         <span>ความคืบหน้าของงาน</span>
@@ -694,6 +740,63 @@ export default function App() {
           {page === "customers" && (
             <section>
               <div className="section-heading">
+                <div>
+                  <h2>Sales Pipeline</h2>
+                  <p>จำนวนลูกค้าตัวอย่างในแต่ละขั้น ไม่ใช่มูลค่ารายได้</p>
+                </div>
+              </div>
+              <div className="pipeline-grid">
+                {customerStates.map((stage) => (
+                  <div className="panel pipeline-column" key={stage}>
+                    <h3>
+                      {stage}{" "}
+                      <span className="count">
+                        {
+                          data.customers.filter((c) => c.status === stage)
+                            .length
+                        }
+                      </span>
+                    </h3>
+                    {data.customers
+                      .filter((c) => c.status === stage)
+                      .map((c) => (
+                        <article key={c.id}>
+                          <strong>{c.name}</strong>
+                          <small>{c.company}</small>
+                          <label
+                            className="sr-only"
+                            htmlFor={"pipeline-" + c.id}
+                          >
+                            สถานะการขาย {c.name}
+                          </label>
+                          <select
+                            id={"pipeline-" + c.id}
+                            value={c.status}
+                            onChange={(e) =>
+                              save({
+                                ...data,
+                                customers: data.customers.map((x) =>
+                                  x.id === c.id
+                                    ? { ...x, status: e.target.value }
+                                    : x,
+                                ),
+                              })
+                            }
+                          >
+                            {customerStates.map((s) => (
+                              <option key={s}>{s}</option>
+                            ))}
+                          </select>
+                        </article>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          {page === "customers" && (
+            <section>
+              <div className="section-heading">
                 <h2>
                   รายชื่อลูกค้า{" "}
                   <span className="count">{data.customers.length}</span>
@@ -758,76 +861,11 @@ export default function App() {
               </div>
             </section>
           )}
-          {(page === "tools" || page === "overview") && (
-            <section>
-              <div className="section-heading">
-                <div>
-                  <h2>ทีมผู้ช่วย AI ของคุณ</h2>
-                  <p>เครื่องมือที่ช่วยขยายขีดความสามารถของธุรกิจ</p>
-                </div>
-                {page === "overview" && (
-                  <button className="text-button" onClick={() => go("tools")}>
-                    ดูเครื่องมือ <ArrowUpRight size={16} />
-                  </button>
-                )}
-              </div>
-              <div className="tools-grid">
-                {[
-                  {
-                    name: "ChatGPT",
-                    role: "ผู้ช่วยบริหารและวางแผน",
-                    letter: "✳",
-                    url: "https://chatgpt.com",
-                  },
-                  {
-                    name: "Codex",
-                    role: "ผู้ช่วยพัฒนาโปรแกรม",
-                    letter: "⌘",
-                    url: "https://chatgpt.com/codex",
-                  },
-                  {
-                    name: "Grok",
-                    role: "ไอเดียและคอนเทนต์ AI",
-                    letter: "𝕏",
-                    url: "https://grok.com",
-                  },
-                  {
-                    name: "Metricool",
-                    role: "จัดการโซเชียลมีเดีย",
-                    letter: "m",
-                    url: "https://metricool.com",
-                  },
-                ].map((t) => (
-                  <article className="tool" key={t.name}>
-                    <div className="tool-heading">
-                      <span className="tool-logo">{t.letter}</span>
-                      <a
-                        href={t.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={"เปิด " + t.name}
-                      >
-                        <ArrowUpRight size={17} />
-                      </a>
-                    </div>
-                    <h3>{t.name}</h3>
-                    <p>{t.role}</p>
-                    <span className="connection">
-                      <span />
-                      ยังไม่ได้ตรวจสอบการเชื่อมต่อ
-                    </span>
-                  </article>
-                ))}
-              </div>
-              {page === "tools" && (
-                <div className="note">
-                  V1 แสดงข้อมูลเครื่องมือและลิงก์เว็บไซต์เท่านั้น ไม่มีการเรียก
-                  API หรือส่งข้อมูลลูกค้าและโครงการไปยังบริการเหล่านี้
-                  การใช้งานบนเว็บไซต์ภายนอกอาจมีเงื่อนไขหรือค่าใช้จ่ายของผู้ให้บริการ
-                </div>
-              )}
-            </section>
-          )}
+          {page === "tools" && <ToolDirectory store={businessStore} />}
+          {page === "finance" && <Finance store={businessStore} />}
+          {page === "content" && <ContentPlanner store={businessStore} />}
+          {page === "workflows" && <Workflows store={businessStore} />}
+          {page === "settings" && <IntegrationSettings store={businessStore} />}
           {page === "reports" && (
             <>
               <div className="report-summary panel">
@@ -929,6 +967,7 @@ function Editor({
     return () => previous?.focus();
   }, []);
   const item = data[modal.kind].find((x) => x.id === modal.id);
+  const [business, setBusiness] = useState((item as Project)?.business || "");
   const [name, setName] = useState(item?.name || "");
   const [description, setDescription] = useState(
     (item as Project)?.description || "",
@@ -1005,7 +1044,7 @@ function Editor({
               name: name.trim(),
               status,
               ...(modal.kind === "projects"
-                ? { description: description.trim() }
+                ? { description: description.trim(), business }
                 : modal.kind === "tasks"
                   ? { project, due, priority }
                   : { company: company.trim() }),
@@ -1043,6 +1082,21 @@ function Editor({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </label>
+          )}
+          {modal.kind === "projects" && (
+            <label>
+              ประเภทธุรกิจ
+              <select
+                aria-label="ประเภทธุรกิจโครงการ"
+                value={business}
+                onChange={(e) => setBusiness(e.target.value)}
+              >
+                <option value="">ยังไม่ระบุ</option>
+                {businesses.map((b) => (
+                  <option key={b}>{b}</option>
+                ))}
+              </select>
             </label>
           )}
           {modal.kind === "customers" && (

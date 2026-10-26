@@ -79,8 +79,8 @@ test("mobile navigation and unverified AI states", async ({ page }) => {
     .getByRole("button", { name: "เครื่องมือ AI", exact: true })
     .click();
   await expect(
-    page.getByText("ยังไม่ได้ตรวจสอบการเชื่อมต่อ", { exact: true }),
-  ).toHaveCount(4);
+    page.getByText("ลิงก์เท่านั้น · ยังไม่เชื่อมต่อ", { exact: true }),
+  ).toHaveCount(44);
 });
 test("corrupt storage and failed writes show warnings", async ({ page }) => {
   await page.addInitScript(() =>
