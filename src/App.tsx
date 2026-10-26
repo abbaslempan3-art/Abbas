@@ -589,7 +589,16 @@ export default function App({
               onCustomers={(customers) => save({ ...data, customers })}
             />
           )}
-          {page === "backup" && <BackupPanel />}
+          {page === "backup" && (
+            <BackupPanel
+              activeStores={{
+                "abbas-command-center-v1": data,
+                "abbas-business-v1": businessStore.data,
+                "abbas-command-center-v2": v2Store.data,
+                "abbas-workspace-v3": workspaceStore.data,
+              }}
+            />
+          )}
           {v2Store.error && (
             <div className="error" role="alert">
               {v2Store.error}

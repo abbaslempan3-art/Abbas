@@ -9,14 +9,28 @@ import {
   previousSnapshot,
   restoreBackup,
   snapshot,
+  summarizeStore,
+  hasBackupData,
+  planRestore,
   type Backup,
+  type ActiveStores,
 } from "./backup";
-import { storeKeys } from "./schema";
-export function BackupPanel() {
+import { storeKeys, type StoreKey } from "./schema";
+const summary = (key: StoreKey, value: unknown) =>
+  Object.entries(summarizeStore(key, value))
+    .map(([name, n]) => `${name}: ${n}`)
+    .join(" · ") || "ไม่มีข้อมูล";
+export function BackupPanel({ activeStores }: { activeStores: ActiveStores }) {
   const [preview, setPreview] = useState<Backup | null>(null);
   const [expected, setExpected] = useState<ReturnType<typeof snapshot> | null>(
     null,
   );
+  const [merged, setMerged] = useState<Backup["stores"] | null>(null);
+  const [prepared, setPrepared] = useState<{
+    backup: Backup;
+    raw: string;
+    active: string;
+  } | null>(null);
   const [message, setMessage] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -24,60 +38,109 @@ export function BackupPanel() {
   const [blocked, setBlocked] = useState(false);
   const notify = (e: unknown) =>
     setMessage(e instanceof Error ? e.message : "ดำเนินการไม่สำเร็จ");
+  function presence(area: "localStorage" | "sessionStorage", key: StoreKey) {
+    try {
+      return window[area].getItem(key) === null ? "ไม่มีค่า" : "มีค่า";
+    } catch {
+      return "อ่านไม่ได้";
+    }
+  }
   return (
     <section>
       <div className="module-banner">
         <div>
           <span className="eyebrow">V3 · BACKUP & RECOVERY</span>
-          <h2>เก็บข้อมูลของคุณไว้ ก่อนเริ่มก้าวต่อไป</h2>
+          <h2>ตรวจข้อมูลที่ใช้อยู่ ก่อนดาวน์โหลด Backup</h2>
           <p>
-            สำรอง JSON เฉพาะบนเครื่อง ไม่มีการส่งไฟล์ขึ้น server
-            ข้อมูลไม่เข้ารหัสและต้องเก็บในที่ปลอดภัย
+            สำรองบนเครื่อง ไม่มีการส่งไฟล์ขึ้น server และไม่เขียน localStorage
+            ระหว่างการตรวจหรือส่งออก
           </p>
         </div>
         <ShieldCheck size={30} />
       </div>
-      <div className="report-grid">
+      <article className="panel report-card">
+        <h3>ตรวจแหล่งข้อมูลของแอปนี้</h3>
+        <p className="muted">
+          แอปใช้ React state แสดงผล และใช้ localStorage เมื่อบันทึก
+          ข้อมูลตัวอย่าง 5 งานอาจยังอยู่ในหน่วยความจำโดยไม่มีค่าใน localStorage
+          โค้ดนี้ไม่ได้ใช้ sessionStorage, IndexedDB หรือ API โหลดงาน
+          หากพบสำเนาใน sessionStorage ระบบจะไม่รวมข้อมูลนั้นอัตโนมัติ
+        </p>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ส่วนข้อมูล</th>
+                <th>localStorage</th>
+                <th>sessionStorage (ไม่ได้ใช้แสดงผล)</th>
+                <th>ข้อมูลที่แอปแสดงอยู่</th>
+              </tr>
+            </thead>
+            <tbody>
+              {storeKeys.map((k) => (
+                <tr key={k}>
+                  <td>{k}</td>
+                  <td>{presence("localStorage", k)}</td>
+                  <td>{presence("sessionStorage", k)}</td>
+                  <td>{summary(k, activeStores[k])}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
+      <div className="report-grid v3-spaced">
         <article className="panel report-card">
           <h3>สำรองข้อมูลทั้งหมด</h3>
           <p className="muted">
-            รวมข้อมูลที่บันทึกใน V1, Business, V2 และ V3 เฉพาะ browser/origin
-            นี้ ข้อมูลตัวอย่างที่ยังไม่เคยบันทึกไม่อยู่ในไฟล์ ไม่รวมรหัสผ่านหรือ
-            API keys และห้ามใส่ข้อมูลลับในแอป
+            ใช้ข้อมูลที่บันทึกใน localStorage ก่อน หากส่วนนั้นยังไม่มีค่า
+            จะสำรอง React state ที่แสดงอยู่ รวมข้อมูลตัวอย่างที่ยังไม่บันทึก
+            พร้อมระบุ sources ในไฟล์ หากข้อมูลเดิมเสียหายจะหยุด
+            ไม่เอาข้อมูลตัวอย่างไปแทนโดยเงียบ ๆ ไฟล์ไม่เข้ารหัส ห้ามใส่ข้อมูลลับ
           </p>
           <button
             className="primary"
             onClick={() => {
+              setPrepared(null);
               try {
-                downloadJson(
-                  createBackup(localStorage),
-                  "abbas-backup-" +
-                    new Date().toISOString().slice(0, 10) +
-                    ".json",
+                const backup = createBackup(localStorage, activeStores);
+                setPrepared({
+                  backup,
+                  raw: JSON.stringify(snapshot(localStorage)),
+                  active: JSON.stringify(activeStores),
+                });
+                setMessage(
+                  "ตรวจข้อมูลผ่านแล้ว กรุณาตรวจจำนวนและแหล่งข้อมูลก่อนยืนยันดาวน์โหลด",
                 );
-                setMessage("สร้างไฟล์สำรองแล้ว กรุณาเก็บไฟล์ไว้ในที่ปลอดภัย");
               } catch (e) {
                 notify(e);
               }
             }}
           >
             <Download size={15} />
-            ดาวน์โหลด Backup JSON
+            ตรวจสอบ Backup ก่อนดาวน์โหลด
           </button>
           <button
             className="secondary v3-spaced"
             onClick={() => {
               try {
+                let sessionStores: ReturnType<typeof snapshot> | null = null;
+                try {
+                  sessionStores = snapshot(sessionStorage);
+                } catch {
+                  /* local raw copy remains available */
+                }
                 downloadJson(
                   {
                     format: "abbas-raw-recovery",
                     version: 1,
                     stores: snapshot(localStorage),
+                    sessionStores,
                   },
                   "abbas-raw-recovery.json",
                 );
                 setMessage(
-                  "สำรองข้อมูลดิบแล้ว ไฟล์นี้ใช้ตรวจซ่อมข้อมูล ไม่ใช่ไฟล์สำหรับกู้คืนอัตโนมัติ",
+                  "สำรองข้อมูลดิบแล้ว ไฟล์นี้ไม่ใช่ Backup สำหรับกู้คืนอัตโนมัติ",
                 );
               } catch (e) {
                 notify(e);
@@ -90,8 +153,8 @@ export function BackupPanel() {
         <article className="panel report-card">
           <h3>สำเนาก่อนการกู้คืนครั้งล่าสุด</h3>
           <p className="muted">
-            เก็บเฉพาะสำเนาครั้งล่าสุดใน browser
-            สำเนาอาจสูญหายหากล้างข้อมูลเว็บไซต์ จึงควรดาวน์โหลดเก็บต่างหาก
+            เก็บเพียงครั้งล่าสุดใน browser ควรดาวน์โหลดเก็บต่างหาก
+            ไม่มีการล้างข้อมูลเมื่อส่งออก
           </p>
           <button
             className="secondary"
@@ -99,20 +162,23 @@ export function BackupPanel() {
               try {
                 const before = previousSnapshot(localStorage);
                 if (!before) throw Error("ยังไม่มีสำเนาก่อนกู้คืน");
-                const stores = Object.fromEntries(
-                  storeKeys.map((k) => [
-                    k,
-                    before[k] === null ? null : JSON.parse(before[k]!),
-                  ]),
-                );
                 const backup = parseBackup(
                   JSON.stringify({
                     format: "abbas-backup",
                     version: 1,
                     exportedAt: new Date().toISOString(),
-                    stores,
+                    stores: Object.fromEntries(
+                      storeKeys.map((k) => [
+                        k,
+                        before[k] === null ? null : JSON.parse(before[k]!),
+                      ]),
+                    ),
                   }),
                 );
+                if (!hasBackupData(backup))
+                  throw Error(
+                    "สำเนาก่อนกู้คืนไม่มีรายการข้อมูล จึงไม่ดาวน์โหลดไฟล์ว่าง",
+                  );
                 downloadJson(backup, "abbas-before-restore.json");
                 setMessage("ดาวน์โหลดสำเนาก่อนกู้คืนแล้ว");
               } catch (e) {
@@ -124,13 +190,75 @@ export function BackupPanel() {
           </button>
         </article>
       </div>
+      {prepared && (
+        <article className="panel report-card v3-export-preview">
+          <h3>สรุปข้อมูลก่อนดาวน์โหลด</h3>
+          <p className="note">
+            ข้อมูลจาก active-memory คือข้อมูลที่แอปกำลังแสดงและยังไม่บันทึก
+            อาจเป็นข้อมูลตัวอย่างเริ่มต้น
+            ไม่ใช่หลักฐานว่ามีข้อมูลลูกค้าหรือธุรกรรมจริง
+            ไม่มีการบันทึกข้อมูลตัวอย่างลง localStorage อัตโนมัติ
+          </p>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ส่วนข้อมูล</th>
+                  <th>ต้นทางในไฟล์</th>
+                  <th>รายการที่จะส่งออก</th>
+                </tr>
+              </thead>
+              <tbody>
+                {storeKeys.map((k) => (
+                  <tr key={k}>
+                    <td>{k}</td>
+                    <td>{prepared.backup.sources?.[k]}</td>
+                    <td>{summary(k, prepared.backup.stores[k])}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button
+            className="primary"
+            onClick={() => {
+              try {
+                if (
+                  JSON.stringify(snapshot(localStorage)) !== prepared.raw ||
+                  JSON.stringify(activeStores) !== prepared.active
+                ) {
+                  setPrepared(null);
+                  throw Error(
+                    "ข้อมูลเปลี่ยนหลังตรวจ กรุณาเตรียม Backup ใหม่ก่อนดาวน์โหลด",
+                  );
+                }
+                const checked = parseBackup(JSON.stringify(prepared.backup));
+                if (!hasBackupData(checked))
+                  throw Error("ไม่พบข้อมูลสำหรับสำรอง");
+                downloadJson(
+                  checked,
+                  "abbas-backup-" +
+                    new Date().toISOString().slice(0, 10) +
+                    ".json",
+                );
+                setMessage("สร้างไฟล์สำรองที่ตรวจแล้ว กรุณาเก็บในที่ปลอดภัย");
+              } catch (e) {
+                notify(e);
+              }
+            }}
+          >
+            ยืนยันดาวน์โหลด Backup JSON
+          </button>
+        </article>
+      )}
       <div className="panel inline-editor">
-        <h3>ตรวจไฟล์ก่อนกู้คืน</h3>
+        <h3>ตรวจไฟล์ก่อนกู้คืนแบบเพิ่มข้อมูล</h3>
         <p className="note">
-          การกู้คืนจะ <strong>แทนที่ข้อมูลทั้ง 4 ส่วน</strong> ด้วยไฟล์ที่เลือก
-          ไม่ใช่การรวมรายการ ระบบจะเก็บสำเนาก่อนแก้ไขและพยายาม rollback
-          หากเขียนไม่สำเร็จ ใช้เพียงแท็บเดียวระหว่างกู้คืน
-          ปิดแท็บแอปอื่นและดาวน์โหลด backup ปัจจุบันก่อน
+          กู้คืนแบบ <strong>เพิ่มรายการที่ยังไม่มีเท่านั้น</strong>{" "}
+          ไม่ลบรายการเดิม ค่า null/ส่วนที่ว่างจะรักษาข้อมูลเดิม หาก ID
+          หรือค่าที่มีอยู่ขัดแย้ง ระบบจะหยุดทั้งไฟล์ก่อนเขียน
+          ไม่เขียนทับโดยอัตโนมัติ ใช้แท็บเดียวและดาวน์โหลด Backup
+          ปัจจุบันก่อนยืนยัน
         </p>
         <label>
           ไฟล์สำรอง JSON
@@ -141,6 +269,7 @@ export function BackupPanel() {
             disabled={busy || blocked}
             onChange={async (e) => {
               setPreview(null);
+              setMerged(null);
               setExpected(null);
               setConfirmation("");
               setAgreed(false);
@@ -154,9 +283,14 @@ export function BackupPanel() {
               setBusy(true);
               try {
                 const candidate = parseBackup(await file.text());
-                setExpected(snapshot(localStorage));
+                const current = snapshot(localStorage);
+                const result = planRestore(candidate, current);
+                setExpected(current);
+                setMerged(result);
                 setPreview(candidate);
-                setMessage("ตรวจไฟล์ผ่านแล้ว ยังไม่เขียนข้อมูลจนกว่าจะยืนยัน");
+                setMessage(
+                  "ตรวจไฟล์ผ่านแล้ว ยังไม่เขียนข้อมูลจนกว่าจะยืนยันเพิ่มรายการ",
+                );
               } catch (error) {
                 notify(error);
               } finally {
@@ -165,7 +299,7 @@ export function BackupPanel() {
             }}
           />
         </label>
-        {preview && (
+        {preview && expected && merged && (
           <div className="v3-restore-preview">
             <p>
               วันที่สำรอง:{" "}
@@ -176,7 +310,9 @@ export function BackupPanel() {
                 <thead>
                   <tr>
                     <th>ส่วนข้อมูล</th>
-                    <th>ข้อมูลในไฟล์</th>
+                    <th>ข้อมูลปัจจุบันที่บันทึก</th>
+                    <th>ในไฟล์</th>
+                    <th>หลังเพิ่มข้อมูล</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -184,16 +320,19 @@ export function BackupPanel() {
                     <tr key={k}>
                       <td>{k}</td>
                       <td>
-                        {preview.stores[k] === null
-                          ? "ไม่มีข้อมูลที่บันทึก (จะลบ key ส่วนนี้)"
-                          : Object.entries(preview.stores[k] as object)
-                              .filter(([, v]) => Array.isArray(v))
-                              .map(
-                                ([name, v]) =>
-                                  name + ": " + (v as unknown[]).length,
-                              )
-                              .join(" · ") || "ข้อมูลที่ตรวจแล้ว"}
+                        {summary(
+                          k,
+                          expected[k] === null
+                            ? null
+                            : JSON.parse(expected[k]!),
+                        )}
                       </td>
+                      <td>
+                        {preview.stores[k] === null
+                          ? "ไม่ระบุ — รักษาข้อมูลเดิม"
+                          : summary(k, preview.stores[k])}
+                      </td>
+                      <td>{summary(k, merged[k])}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -205,7 +344,7 @@ export function BackupPanel() {
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
               />
-              ฉันสำรองข้อมูลปัจจุบันและยอมรับการแทนที่ข้อมูลทั้งหมด
+              ฉันตรวจไฟล์และยอมรับการเพิ่มรายการโดยไม่เขียนทับข้อมูลเดิม
             </label>
             <label>
               พิมพ์ กู้คืน เพื่อยืนยัน
@@ -219,11 +358,20 @@ export function BackupPanel() {
               className="primary"
               disabled={!agreed || confirmation !== "กู้คืน" || busy || blocked}
               onClick={() => {
-                if (!expected) return;
                 setBusy(true);
                 try {
-                  restoreBackup(localStorage, preview, expected);
-                  window.location.reload();
+                  const changed = restoreBackup(
+                    localStorage,
+                    preview,
+                    expected,
+                  );
+                  if (changed) window.location.reload();
+                  else {
+                    setPreview(null);
+                    setMessage(
+                      "ข้อมูลในไฟล์มีอยู่แล้ว ไม่มีการเปลี่ยนแปลงข้อมูลเดิม",
+                    );
+                  }
                 } catch (e) {
                   notify(e);
                   let pending = true;
@@ -240,7 +388,7 @@ export function BackupPanel() {
                   setPreview(null);
                   setMessage(
                     (e instanceof Error ? e.message : "กู้คืนไม่สำเร็จ") +
-                      " กรุณาโหลดหน้าใหม่เพื่อให้ระบบตรวจ recovery ก่อนทำงานต่อ",
+                      " กรุณาโหลดใหม่เพื่อตรวจ recovery ก่อนทำงานต่อ",
                   );
                 } finally {
                   setBusy(false);

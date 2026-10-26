@@ -176,8 +176,11 @@ test("backup validation rejects unsafe, incomplete, duplicate and oversized reco
 test("restore fails safely before journal, rolls back partial writes, and recovers an interrupted restore", () => {
   const storage = fixture();
   const backup = createBackup(storage);
-  (backup.stores[storeKeys[0]] as typeof legacy).projects[0].name =
-    "หลัง restore";
+  (backup.stores[storeKeys[0]] as typeof legacy).projects.push({
+    ...legacy.projects[0],
+    id: "p-new",
+    name: "หลัง restore",
+  });
   const before = snapshot(storage);
   storage.failKey = journalKey;
   expect(() => restoreBackup(storage, backup, before)).toThrow();
@@ -273,17 +276,23 @@ test("backup UI requires confirmation, rejects invalid input, restores data and 
       ].map((k) => [k, localStorage.getItem(k)]),
     ),
   );
+  await page
+    .getByRole("button", { name: "ตรวจสอบ Backup ก่อนดาวน์โหลด", exact: true })
+    .click();
   const downloadPromise = page.waitForEvent("download");
   await page
-    .getByRole("button", { name: "ดาวน์โหลด Backup JSON", exact: true })
+    .getByRole("button", { name: "ยืนยันดาวน์โหลด Backup JSON", exact: true })
     .click();
   const download = await downloadPromise;
   const stream = await download.createReadStream();
   let raw = "";
   for await (const chunk of stream!) raw += chunk;
   const backup = parseBackup(raw);
-  (backup.stores[storeKeys[0]] as typeof legacy).projects[0].name =
-    "โครงการจากไฟล์สำรอง";
+  (backup.stores[storeKeys[0]] as typeof legacy).projects.push({
+    ...legacy.projects[0],
+    id: "p-imported",
+    name: "โครงการจากไฟล์สำรอง",
+  });
   await page.getByLabel("ไฟล์สำรอง JSON", { exact: true }).setInputFiles({
     name: "bad.json",
     mimeType: "application/json",
@@ -321,7 +330,7 @@ test("backup UI requires confirmation, rejects invalid input, restores data and 
   expect(
     await page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem("abbas-command-center-v1")!).projects[0]
+        JSON.parse(localStorage.getItem("abbas-command-center-v1")!).projects[1]
           .name,
     ),
   ).toBe("โครงการจากไฟล์สำรอง");
