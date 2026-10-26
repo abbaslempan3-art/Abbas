@@ -2058,3 +2058,131 @@ nav {
     flex-direction: column;
   }
 }
+.v3-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+.v3-tabs button {
+  padding: 11px 17px;
+  border: 1px solid #dce5d8;
+  background: white;
+  border-radius: 7px;
+  color: #6b866e;
+  font-size: 12px;
+}
+.v3-tabs button[aria-selected="true"] {
+  background: #e3f0e5;
+  border-color: #80ad86;
+  color: #275d35;
+}
+.v3-work-panel {
+  padding: 26px;
+  overflow: visible;
+}
+.v3-work-panel > label,
+.v3-work-panel form label {
+  display: block;
+  font-size: 11px;
+  color: #718b71;
+  margin: 16px 0;
+}
+.v3-work-panel input,
+.v3-work-panel select,
+.v3-work-panel textarea {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: #fafcf9;
+  border: 1px solid #dce5d8;
+  border-radius: 6px;
+  color: #3a5d41;
+  font: inherit;
+  margin-top: 7px;
+}
+.v3-work-panel textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.v3-work-panel .executive-grid {
+  margin-top: 20px;
+}
+.v3-work-panel .executive-stat {
+  border: 1px solid #edf1e9;
+  border-radius: 7px;
+}
+.v3-work-panel .executive-stat strong {
+  font-size: 20px;
+}
+.v3-work-panel table {
+  margin-top: 20px;
+}
+.v3-work-panel .search input {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.v3-spaced {
+  margin-top: 15px;
+  display: block;
+}
+.report-card > .primary {
+  margin-top: 20px;
+}
+.v3-agreement {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.8;
+}
+.v3-agreement input {
+  width: 18px !important;
+  margin-top: 3px !important;
+}
+.v3-restore-preview {
+  padding: 18px;
+  background: #f5f8f2;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+.v3-restore-preview > p {
+  font-size: 12px;
+  color: #7d937a;
+}
+.v3-restore-preview table {
+  background: white;
+}
+.v3-followups {
+  border-top: 1px solid #e4ecdf;
+  margin-top: 23px;
+  padding-top: 16px;
+}
+.v3-followups h4 {
+  font-size: 13px;
+  color: #6c876a;
+}
+.v3-followups p {
+  font-size: 11px;
+  color: #84977f;
+  margin-top: 8px;
+}
+@media (max-width: 480px) {
+  .v3-work-panel {
+    padding: 18px;
+  }
+  .v3-tabs {
+    gap: 7px;
+  }
+  .v3-tabs button {
+    padding: 10px 13px;
+    font-size: 11px;
+  }
+  .v3-restore-preview {
+    padding: 12px;
+  }
+  .sidebar nav {
+    min-height: 100px;
+  }
+}
