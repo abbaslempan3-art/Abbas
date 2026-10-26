@@ -6,3 +6,6 @@ dist/
 *.tsbuildinfo
 playwright-report/
 test-results/
+
+# Vercel local project metadata and build output
+.vercel/

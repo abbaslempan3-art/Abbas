@@ -4,7 +4,7 @@
 
 ## ติดตั้งและใช้งาน
 
-ต้องมี Node.js 22+ และ npm ใช้ checkout ปัจจุบัน ไม่ต้องสร้าง worktree ใหม่
+ต้องมี Node.js 24.x และ npm (ตรงกับ `engines` และ runtime ที่ทดสอบ) ใช้ checkout ปัจจุบัน ไม่ต้องสร้าง worktree ใหม่
 
 ```sh
 npm ci
@@ -112,3 +112,13 @@ Playwright เริ่ม Vite ให้เอง ทดสอบเดิม 3
 - `tests/` — Playwright regression/functional tests
 
 V1 ยังไม่มี AI integration จริง การแจ้งเตือน การโพสต์คอนเทนต์ การเชื่อมธนาคาร บัญชีเต็มรูปแบบ export/import หรือ production security ต้องพัฒนาและตรวจสอบส่วนเหล่านี้ก่อนใช้ข้อมูลธุรกิจจริง
+
+## Deploy บน Vercel
+
+โปรเจกต์นี้ deploy เป็น **Vite static frontend** จาก root ของ repository เท่านั้น ไม่ต้องรัน `npm run dev`, Playwright หรือ Backend scaffold ในขั้น deployment
+
+ไฟล์ `vercel.json` ระบุ Framework = Vite, Install = `npm ci`, Build = `npm run build`, Output = `dist` และ `package.json` ระบุ Node.js 24.x ไม่ต้องมี environment variables หรือ API keys สำหรับ V1
+
+หลังตรวจและ merge PR ให้ตรวจใน Vercel ว่าเชื่อม repository `abbaslempan3-art/Abbas`, Production Branch = `main`, Root Directory = root (`.`) แล้วสั่ง deploy commit บน main ค่าใน GitHub อย่างเดียวไม่สร้าง Production Deployment จนกว่า Vercel Git integration/สิทธิ์และการตั้งค่าโปรเจกต์พร้อมใช้งาน
+
+ดูขั้นตอนและการแยกปัญหา Preview/Production/Build Logs ใน [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) ไม่มีการสร้าง deployment หรือเปลี่ยนแพ็กเกจ Vercel จากโค้ดชุดนี้
