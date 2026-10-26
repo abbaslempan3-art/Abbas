@@ -1,3 +1,5 @@
+import { compileWorkflowPlan } from "../v2/workflowPlan";
+import { integrationState, statusLabels } from "../v2/providers";
 import { useState } from "react";
 import {
   Plus,
@@ -557,6 +559,23 @@ export function Workflows({ store }: { store: BusinessStore }) {
     setSimulation([]);
     setMessage("");
   }
+  function exportPlan() {
+    try {
+      const plan = compileWorkflowPlan(draft, tools);
+      const blob = new Blob([JSON.stringify(plan, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "abbas-workflow-plan.json";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setMessage("ส่งออกแผน JSON แล้ว ไม่ได้ส่งงานให้ AI หรือเปิดการเชื่อมต่อ");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "ส่งออกแผนไม่ได้");
+    }
+  }
   function simulate() {
     if (
       !draft.name.trim() ||
@@ -643,6 +662,11 @@ export function Workflows({ store }: { store: BusinessStore }) {
             value={draft.business}
             onChange={(business) => update({ ...draft, business })}
           />
+          <div className="note">
+            V2 รองรับการส่งออกสัญญาข้อมูลสำหรับ Backend ในอนาคต
+            ทุกขั้นยังต้องตรวจทานเอง และ executionEnabled=false ไม่มี token หรือ
+            API call ในไฟล์แผน
+          </div>
           <div className="workflow-steps">
             {draft.steps.map((s, i) => (
               <div className="workflow-step" key={i}>
@@ -676,6 +700,16 @@ export function Workflows({ store }: { store: BusinessStore }) {
                       ))}
                     </select>
                   </label>
+                  <div className="v2-step-state">
+                    <span className="badge neutral">
+                      {
+                        statusLabels[
+                          integrationState(tools.find((t) => t.id === s.toolId))
+                        ]
+                      }
+                    </span>
+                    <small>API: ยังไม่พร้อมใช้งาน</small>
+                  </div>
                   <label>
                     แผนงานขั้นที่ {i + 1}
                     <textarea
@@ -754,6 +788,9 @@ export function Workflows({ store }: { store: BusinessStore }) {
             <Plus size={15} /> เพิ่มขั้นตอน
           </button>
           <div className="form-actions">
+            <button type="button" className="secondary" onClick={exportPlan}>
+              ส่งออกแผน JSON
+            </button>
             <button type="button" className="secondary" onClick={simulate}>
               <Play size={14} /> จำลองแผน
             </button>

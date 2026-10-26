@@ -1,4 +1,4 @@
-# Abbas AI Command Center V1 · Entrepreneur Workspace
+# Abbas AI Command Center V2 · Entrepreneur Workspace
 
 ศูนย์บัญชาการ AI ภาษาไทยสำหรับผู้ประกอบการ ด้วย **React + Vite + TypeScript** รองรับมือถือและคอมพิวเตอร์ ต่อจาก V1 เดิมโดยเก็บความสามารถโครงการ งาน CRM และรายงานไว้ ไม่มีการสมัครบริการเสียเงินหรือเรียก AI API
 
@@ -122,3 +122,19 @@ V1 ยังไม่มี AI integration จริง การแจ้งเ
 หลังตรวจและ merge PR ให้ตรวจใน Vercel ว่าเชื่อม repository `abbaslempan3-art/Abbas`, Production Branch = `main`, Root Directory = root (`.`) แล้วสั่ง deploy commit บน main ค่าใน GitHub อย่างเดียวไม่สร้าง Production Deployment จนกว่า Vercel Git integration/สิทธิ์และการตั้งค่าโปรเจกต์พร้อมใช้งาน
 
 ดูขั้นตอนและการแยกปัญหา Preview/Production/Build Logs ใน [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) ไม่มีการสร้าง deployment หรือเปลี่ยนแพ็กเกจ Vercel จากโค้ดชุดนี้
+
+## ABBAS V2 — Command Center
+
+V2 เพิ่มจาก V1 โดยไม่ย้ายหรือลบข้อมูลเดิม เปิดเมนู **AI Command Center**, **งานธุรกิจ** และ **Cost Control** ได้จากแถบด้านข้าง
+
+- **Command Center:** เลือก ChatGPT, Gemini, Claude, Grok, Manus AI, Codex และผู้ช่วยที่เหมาะกับธุรกิจ เช่น GitHub Copilot, NotebookLM, Microsoft Copilot รวมถึงเครื่องมือใน Directory เขียน/บันทึก/เปิดแก้ไขร่างและคัดลอกคำสั่งไปใช้เองได้ ปุ่มเปิดเว็บไซต์ไม่แนบคำสั่งหรือประวัติไปด้วย ปุ่มส่งผ่าน API ปิดไว้
+- **สถานะ:** เว็บไซต์เป็น “ลิงก์เท่านั้น”; สั่งผ่าน API เป็น “ยังไม่พร้อมใช้งาน” ทุกตัว การเปิดเว็บไซต์หรืออ่านหน้าแผนไม่ใช่การเชื่อมต่อจริง ไม่มีตัวเลือกให้ผู้ใช้เปลี่ยนเป็น connected จาก Local Storage
+- **งานธุรกิจ:** แยกฝ่ายการตลาด การขาย CRM การเงิน ร้านอาหาร และโครงการ โดยใช้รายการงาน V1 ชุดเดิม เพิ่ม field `department` แบบ optional งานที่มีอยู่ไม่ถูกจัดฝ่ายหรือแก้ไขอัตโนมัติ แก้ในหน้าเดิมแล้วข้อมูลฝ่ายและ metadata เดิมยังอยู่
+- **Workflow:** สร้าง/แก้ไข/เรียง/จำลองแผนแบบเดิมได้ พร้อมส่งออก JSON v2 สำหรับออกแบบ Backend ในอนาคต ไฟล์ระบุ `mode: draft_only`, `executionEnabled: false`, `requiresHumanReview: true` และ `integrationState: not_configured` ไม่ใช่ AI output หรือ executable job
+- **Cost Control:** แสดงแผนฟรี โควตา ข้อจำกัด ความเสี่ยง และแหล่งข้อมูลพร้อมวันที่ตรวจ ข้อมูลที่อ่านไม่ได้ระบุ “ยังไม่ยืนยัน” ไม่สมมติว่าใช้ฟรีตลอดไป บันทึกการใช้งานรายเดือนและวันทดลองที่คุณตรวจจากบัญชีเองได้ โดยแยกชัดเจนจากข้อมูลผู้ให้บริการ ไม่มีการอ่าน usage/สิทธิ์หรือเปิด billing
+
+วันที่ 26 ตุลาคม 2026 อ่านหน้าแผน GitHub Copilot ได้: Free $0, inline suggestions 2,000/เดือน และ limited chat/agent usage ส่วนหน้าแผนของอีก 6 ผู้ให้บริการถูก proxy ปฏิเสธ จึงยังไม่ยืนยันแผน/โควตา/ระยะทดลอง รายละเอียดข้อความต้นทางและหลักฐานอยู่ใน [docs/V2_PROVIDER_REVIEW.md](docs/V2_PROVIDER_REVIEW.md) ข้อมูลเป็น snapshot ไม่ใช่การรับรองสิทธิ์บัญชีและอาจเปลี่ยนได้ UI เตือนให้ตรวจใหม่เมื่อเกิน 30 วัน การติดตามตัวเลขที่กรอกเองไม่ใช่การวัดโควตาคงเหลือจริง
+
+V2 ใช้ Local Storage key ใหม่ `abbas-command-center-v2` เฉพาะร่างคำสั่งและการติดตามค่าใช้จ่าย ไม่เขียนทับ keys V1 เมื่อเปิดหน้าหรือบันทึกร่าง ถ้า V2 อ่านข้อมูลไม่ได้จะปิดการบันทึกเพื่อรักษาข้อมูลเดิม หากอีกแท็บแก้ข้อมูลก่อนหน้าปัจจุบันบันทึก จะเตือนให้ reload โดยไม่เขียนทับ (เป็น optimistic check ไม่ใช่ฐานข้อมูลที่รองรับการเขียนพร้อมกันแบบ transaction) อย่าใส่ secrets หรือข้อมูลลูกค้า/การเงินจริงในร่าง ข้อมูลยังไม่เข้ารหัสและไม่มีระบบสำรองบน server
+
+ทดสอบด้วยคำสั่งเดิม: `npm ci`, `npm test`, `npm run build` และ `npm run test:backend` ชุดทดสอบเพิ่มจากเดิม 9 เป็น 17 ชุด รวมการรักษาข้อมูลเดิม หน้าจอมือถือ 390/320 พิกเซล และการยืนยันว่าไม่มีการส่งคำสั่งให้ AI อ่านขอบเขตและขั้นตอนต่อไปใน [docs/V2_REVIEW.md](docs/V2_REVIEW.md)
