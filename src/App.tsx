@@ -1,3 +1,6 @@
+import { Workspace } from "./v3/Workspace";
+import { BackupPanel } from "./v3/BackupPanel";
+import { useWorkspace } from "./v3/useWorkspace";
 import { CommandCenter } from "./v2/CommandCenter";
 import { BusinessHub } from "./v2/BusinessHub";
 import { CostControl } from "./v2/CostControl";
@@ -38,6 +41,8 @@ import {
   Terminal,
   BriefcaseBusiness,
   ShieldCheck,
+  PanelsTopLeft,
+  DatabaseBackup,
 } from "lucide-react";
 
 type Project = {
@@ -59,6 +64,8 @@ type Task = {
 type Customer = { id: string; name: string; company: string; status: string };
 type Data = { projects: Project[]; tasks: Task[]; customers: Customer[] };
 type Page =
+  | "workspace-v3"
+  | "backup"
   | "command"
   | "operations"
   | "cost-control"
@@ -212,6 +219,8 @@ function load(): { data: Data; error: string } {
   }
 }
 const nav = [
+  { id: "workspace-v3", label: "พื้นที่ทำงาน V3", icon: PanelsTopLeft },
+  { id: "backup", label: "สำรองและกู้คืน", icon: DatabaseBackup },
   { id: "command", label: "AI Command Center", icon: Terminal },
   { id: "operations", label: "งานธุรกิจ", icon: BriefcaseBusiness },
   { id: "cost-control", label: "Cost Control", icon: ShieldCheck },
@@ -249,7 +258,12 @@ function Badge({ value }: { value: string }) {
     </span>
   );
 }
-export default function App() {
+export default function App({
+  recoveryNotice = "",
+}: {
+  recoveryNotice?: string;
+}) {
+  const workspaceStore = useWorkspace();
   const businessStore = useBusiness();
   const v2Store = useV2();
   const [initial] = useState(load);
@@ -442,7 +456,7 @@ export default function App() {
           <div>
             พื้นที่ทำงานของ Abbas<small>Personal workspace</small>
           </div>
-          <span className="version">V2</span>
+          <span className="version">V3</span>
         </div>
         <div className="nav-label">พื้นที่ทำงาน</div>
         <nav id="workspace-navigation">
@@ -552,6 +566,38 @@ export default function App() {
             <div role="alert" className="error">
               {businessStore.error}
             </div>
+          )}
+          {recoveryNotice && (
+            <p className="note" role="status">
+              {recoveryNotice}
+            </p>
+          )}
+          {workspaceStore.error && (
+            <p className="error" role="alert">
+              {workspaceStore.error}
+            </p>
+          )}
+          {page === "workspace-v3" && (
+            <Workspace
+              tasks={data.tasks}
+              customers={data.customers}
+              business={businessStore}
+              v2={v2Store}
+              workspace={workspaceStore}
+              onAddTask={() => setModal({ kind: "tasks" })}
+              onOpen={go}
+              onCustomers={(customers) => save({ ...data, customers })}
+            />
+          )}
+          {page === "backup" && (
+            <BackupPanel
+              activeStores={{
+                "abbas-command-center-v1": data,
+                "abbas-business-v1": businessStore.data,
+                "abbas-command-center-v2": v2Store.data,
+                "abbas-workspace-v3": workspaceStore.data,
+              }}
+            />
           )}
           {v2Store.error && (
             <div className="error" role="alert">
@@ -975,7 +1021,7 @@ export default function App() {
             <span>
               ABBAS <b>AI COMMAND CENTER</b>
             </span>
-            <span>พื้นที่เล็ก ๆ สำหรับความสำเร็จที่ยิ่งใหญ่ · V2</span>
+            <span>พื้นที่เล็ก ๆ สำหรับความสำเร็จที่ยิ่งใหญ่ · V3</span>
           </footer>
         </main>
       </div>
