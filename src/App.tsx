@@ -1,3 +1,8 @@
+import { CommandCenter } from "./v2/CommandCenter";
+import { BusinessHub } from "./v2/BusinessHub";
+import { CostControl } from "./v2/CostControl";
+import { departments } from "./v2/providers";
+import { useV2 } from "./v2/useV2";
 import { ToolDirectory } from "./features/Directory";
 import {
   Executive,
@@ -30,6 +35,9 @@ import {
   CalendarDays,
   Workflow,
   Settings,
+  Terminal,
+  BriefcaseBusiness,
+  ShieldCheck,
 } from "lucide-react";
 
 type Project = {
@@ -40,6 +48,7 @@ type Project = {
   status: string;
 };
 type Task = {
+  department?: string;
   id: string;
   name: string;
   project: string;
@@ -50,6 +59,9 @@ type Task = {
 type Customer = { id: string; name: string; company: string; status: string };
 type Data = { projects: Project[]; tasks: Task[]; customers: Customer[] };
 type Page =
+  | "command"
+  | "operations"
+  | "cost-control"
   | "overview"
   | "projects"
   | "tasks"
@@ -170,6 +182,7 @@ function validData(value: unknown): value is Data {
     d.tasks.every(
       (t) =>
         t &&
+        (t.department === undefined || typeof t.department === "string") &&
         ["id", "name", "project", "due", "priority", "status"].every(
           (k) => typeof t[k as keyof Task] === "string",
         ),
@@ -199,6 +212,9 @@ function load(): { data: Data; error: string } {
   }
 }
 const nav = [
+  { id: "command", label: "AI Command Center", icon: Terminal },
+  { id: "operations", label: "งานธุรกิจ", icon: BriefcaseBusiness },
+  { id: "cost-control", label: "Cost Control", icon: ShieldCheck },
   { id: "overview", label: "ภาพรวม", icon: LayoutDashboard },
   { id: "projects", label: "โครงการ", icon: FolderKanban },
   { id: "tasks", label: "งานทั้งหมด", icon: ListTodo },
@@ -235,6 +251,7 @@ function Badge({ value }: { value: string }) {
 }
 export default function App() {
   const businessStore = useBusiness();
+  const v2Store = useV2();
   const [initial] = useState(load);
   const [data, setData] = useState(initial.data);
   const [error, setError] = useState(initial.error);
@@ -425,7 +442,7 @@ export default function App() {
           <div>
             พื้นที่ทำงานของ Abbas<small>Personal workspace</small>
           </div>
-          <span className="version">V1</span>
+          <span className="version">V2</span>
         </div>
         <div className="nav-label">พื้นที่ทำงาน</div>
         <nav id="workspace-navigation">
@@ -535,6 +552,29 @@ export default function App() {
             <div role="alert" className="error">
               {businessStore.error}
             </div>
+          )}
+          {v2Store.error && (
+            <div className="error" role="alert">
+              {v2Store.error}
+            </div>
+          )}
+          {page === "command" && (
+            <CommandCenter tools={businessStore.tools} store={v2Store} />
+          )}
+          {page === "operations" && (
+            <BusinessHub
+              tasks={data.tasks}
+              onChange={(tasks) => save({ ...data, tasks })}
+              onAdd={() => setModal({ kind: "tasks" })}
+              onOpen={go}
+            />
+          )}
+          {page === "cost-control" && (
+            <CostControl
+              tools={businessStore.tools}
+              costs={businessStore.data.costs}
+              store={v2Store}
+            />
           )}
           {page === "overview" && <Executive store={businessStore} />}
           {page === "overview" && (
@@ -935,7 +975,7 @@ export default function App() {
             <span>
               ABBAS <b>AI COMMAND CENTER</b>
             </span>
-            <span>พื้นที่เล็ก ๆ สำหรับความสำเร็จที่ยิ่งใหญ่ · V1</span>
+            <span>พื้นที่เล็ก ๆ สำหรับความสำเร็จที่ยิ่งใหญ่ · V2</span>
           </footer>
         </main>
       </div>
@@ -973,6 +1013,9 @@ function Editor({
     (item as Project)?.description || "",
   );
   const [company, setCompany] = useState((item as Customer)?.company || "");
+  const [department, setDepartment] = useState(
+    (item as Task)?.department || "",
+  );
   const [project, setProject] = useState((item as Task)?.project || "");
   const [due, setDue] = useState((item as Task)?.due || "");
   const [priority, setPriority] = useState(
@@ -1040,13 +1083,14 @@ function Editor({
             e.preventDefault();
             if (!name.trim()) return;
             const value = {
+              ...item,
               id: item?.id || crypto.randomUUID(),
               name: name.trim(),
               status,
               ...(modal.kind === "projects"
                 ? { description: description.trim(), business }
                 : modal.kind === "tasks"
-                  ? { project, due, priority }
+                  ? { project, due, priority, department }
                   : { company: company.trim() }),
             };
             const next = {
@@ -1111,6 +1155,19 @@ function Editor({
           )}
           {modal.kind === "tasks" && (
             <>
+              <label>
+                ฝ่ายธุรกิจงาน
+                <select
+                  aria-label="ฝ่ายธุรกิจงาน"
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                >
+                  <option value="">ยังไม่จัดฝ่าย</option>
+                  {departments.map((d) => (
+                    <option key={d}>{d}</option>
+                  ))}
+                </select>
+              </label>
               <label>
                 โครงการ
                 <select
