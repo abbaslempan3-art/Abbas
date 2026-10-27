@@ -39,7 +39,7 @@ test("valid private request sends to Gemini and returns assistant text (mocked)"
   let called=0;
   globalThis.fetch=async(url,options)=>{
     called++;
-    assert.match(String(url),/gemini-2\\.5-flash:generateContent/);
+    assert.ok(String(url).includes("gemini-2.5-flash:generateContent"));
     assert.equal(options.headers["x-goog-api-key"],"test-only-key");
     const payload=JSON.parse(options.body);
     assert.equal(payload.contents[0].role,"user");
