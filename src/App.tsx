@@ -1,4 +1,5 @@
 import { Workspace } from "./v3/Workspace";
+import { SecretaryBrief } from "./v3/SecretaryBrief";
 import { BackupPanel } from "./v3/BackupPanel";
 import { useWorkspace } from "./v3/useWorkspace";
 import { CommandCenter } from "./v2/CommandCenter";
@@ -577,6 +578,7 @@ export default function App({
               {workspaceStore.error}
             </p>
           )}
+          {page === "workspace-v3" && <SecretaryBrief tasks={data.tasks} customers={data.customers} deals={workspaceStore.data.deals} />}
           {page === "workspace-v3" && (
             <Workspace
               tasks={data.tasks}
