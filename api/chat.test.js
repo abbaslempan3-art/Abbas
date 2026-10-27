@@ -31,3 +31,36 @@ test("rejects oversized conversation",async()=>{
   process.env.GEMINI_API_KEY="test-only-key";
   const r=await invoke({token:access,body:{messages:Array.from({length:21},()=>({role:"user",text:"hello"}))}});assert.equal(r.statusCode,400);
 });
+
+test("valid private request sends to Gemini and returns assistant text (mocked)",async()=>{
+  process.env.ABBAS_AI_ACCESS_TOKEN=access;
+  process.env.GEMINI_API_KEY="test-only-key";
+  const original=globalThis.fetch;
+  let called=0;
+  globalThis.fetch=async(url,options)=>{
+    called++;
+    assert.match(String(url),/gemini-2\\.5-flash:generateContent/);
+    assert.equal(options.headers["x-goog-api-key"],"test-only-key");
+    const payload=JSON.parse(options.body);
+    assert.equal(payload.contents[0].role,"user");
+    assert.equal(payload.contents[0].parts[0].text,"สวัสดี");
+    return {ok:true,json:async()=>({candidates:[{content:{parts:[{text:"สวัสดีค่ะเจ้านาย"}]}}]})};
+  };
+  try {
+    const result=await invoke({token:access,ip:"198.51.100.25",body:{messages:[{role:"user",text:"สวัสดี"}]}});
+    assert.equal(result.statusCode,200);
+    assert.equal(result.body.text,"สวัสดีค่ะเจ้านาย");
+    assert.equal(called,1);
+  } finally {globalThis.fetch=original;}
+});
+test("Gemini quota error maps to safe 429 response (mocked)",async()=>{
+  process.env.ABBAS_AI_ACCESS_TOKEN=access;
+  process.env.GEMINI_API_KEY="test-only-key";
+  const original=globalThis.fetch;
+  globalThis.fetch=async()=>({ok:false,status:429});
+  try{
+    const result=await invoke({token:access,ip:"198.51.100.26",body:{messages:[{role:"user",text:"hello"}]}});
+    assert.equal(result.statusCode,429);
+    assert.equal(result.body.error,"QUOTA_EXCEEDED");
+  } finally {globalThis.fetch=original;}
+});
