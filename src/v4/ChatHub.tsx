@@ -2,40 +2,12 @@ import "./chat.css";
 import { useState, type FormEvent } from "react";
 import { Sparkles } from "lucide-react";
 
-type Task = { name: string; due: string; status: string; priority: string };
-type Customer = { id: string; name: string; status: string };
-type Deal = { id: string; followUp: string; note: string; value: number };
 type Message = { role: "user" | "assistant"; text: string };
-const providers = ["ChatGPT (OpenAI)", "Claude (Anthropic)", "Gemini (Google)", "Grok (xAI)", "Manus", "Codex / GitHub", "Metricool"];
-const day = () => { const d = new Date(); return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-"); };
-
-export function ChatHub({ tasks, customers, deals }: { tasks: Task[]; customers: Customer[]; deals: Deal[] }) {
+export function ChatHub() {
   const [messages, setMessages] = useState<Message[]>([{role:"assistant",text:"สวัสดีค่ะเจ้านาย อามีน่าพร้อมสนทนาผ่าน Gemini AI ค่ะ\n\nตอนนี้ยังไม่ได้เชื่อมต่อระบบงานหรือลูกค้าโดยตรง จึงยังไม่สามารถแก้ไขข้อมูลหรือสั่งงานภายนอกแทนเจ้านายได้ค่ะ"}]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [accessToken, setAccessToken] = useState("");
-  function reply(q: string) {
-    const today = day();
-    if (/ลูกค้า|crm|ติดตาม/i.test(q)) {
-      const due = deals.filter(d => d.followUp && d.followUp <= today).filter(d => {
-        const c = customers.find(c => c.id === d.id);
-        return c && !["ปิดการขาย","ไม่สำเร็จ"].includes(c.status);
-      });
-      return due.length ? "ลูกค้าที่ถึงกำหนดติดตาม ("+due.length+" ราย):\n"+due.map(d => {
-        const c = customers.find(c => c.id === d.id)!;
-        return "• "+c.name+" — "+d.followUp+(d.note?" — "+d.note:"");
-      }).join("\n") : "วันนี้ยังไม่มีลูกค้าที่ถึงกำหนดติดตามตามข้อมูลในเบราว์เซอร์นี้ค่ะ (รายชื่อลูกค้าทั้งหมด "+customers.length+" ราย)";
-    }
-    if (/งาน|สรุป|วันนี้|ค้าง/i.test(q)) {
-      const pending = tasks.filter(t => t.status !== "เสร็จแล้ว");
-      const due = pending.filter(t => t.due && t.due <= today);
-      return "สรุปงานวันที่ "+today+"\nงานค้าง "+pending.length+" งาน | ถึงกำหนด "+due.length+" งาน\n"+(due.length?due.map(t=>"• "+t.name+" ("+t.due+")").join("\n"):"ยังไม่มีงานที่ถึงกำหนดค่ะ");
-    }
-    if (/ai|โมเดล|claude|cloude|gemini|grok|manus|codex|metricool|เชื่อม/i.test(q)) {
-      return "แผนเชื่อมต่อ AI และเครื่องมือ:\n"+providers.map(p=>"• "+p+" — ยังไม่เชื่อม API ในเว็บแอป").join("\n")+"\n\nการเชื่อมต่อจริงต้องมี backend ที่เก็บคีย์ปลอดภัย และได้รับอนุญาตก่อนเปิดค่าใช้จ่ายค่ะ";
-    }
-    return "อามีน่ารับข้อความแล้วค่ะ แต่ตอนนี้ยังเป็นแชตต้นแบบ ไม่ได้ส่งข้อความนี้ไปยัง ChatGPT หรือ AI อื่น และยังดำเนินการตามคำสั่งอิสระไม่ได้ค่ะ\n\nลองพิมพ์ “สรุปงาน”, “ติดตามลูกค้า” หรือ “AI ที่รองรับ” ได้เลย";
-  }
   async function submit(e: FormEvent) {
     e.preventDefault();
     const q = input.trim();
@@ -57,7 +29,7 @@ export function ChatHub({ tasks, customers, deals }: { tasks: Task[]; customers:
       setMessages(prev => [...prev, { role: "assistant", text: data.text }]);
     } catch (error) {
       const message = error instanceof Error ? error.message : "ไม่สามารถเชื่อมต่อ AI ได้ค่ะ";
-      setMessages(prev => [...prev, { role: "assistant", text: message + "\\n\\nสามารถลองส่งข้อความใหม่ได้ค่ะ" }]);
+      setMessages(prev => [...prev, { role: "assistant", text: message + "\n\nสามารถลองส่งข้อความใหม่ได้ค่ะ" }]);
     } finally { setBusy(false); }
   }
   return <main className="abbas-chat abbas-chat-only" aria-label="ABBAS AI Chat">
