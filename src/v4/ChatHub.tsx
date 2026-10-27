@@ -1,3 +1,4 @@
+import "./chat.css";
 import { useState, type FormEvent } from "react";
 import { Send, Sparkles } from "lucide-react";
 
