@@ -64,3 +64,22 @@ test("Gemini quota error maps to safe 429 response (mocked)",async()=>{
     assert.equal(result.body.error,"QUOTA_EXCEEDED");
   } finally {globalThis.fetch=original;}
 });
+
+test("per-instance throttle blocks sixth authenticated request without provider call (mocked)",async()=>{
+  process.env.ABBAS_AI_ACCESS_TOKEN=access;
+  process.env.GEMINI_API_KEY="test-only-key";
+  const original=globalThis.fetch;
+  let calls=0;
+  globalThis.fetch=async()=>{calls++;return {ok:true,json:async()=>({candidates:[{content:{parts:[{text:"ok"}]}}]})};};
+  try{
+    const ip="198.51.100.190";
+    for(let i=0;i<5;i++){
+      const result=await invoke({token:access,ip,body:{messages:[{role:"user",text:"hello"}]}});
+      assert.equal(result.statusCode,200);
+    }
+    const blocked=await invoke({token:access,ip,body:{messages:[{role:"user",text:"hello"}]}});
+    assert.equal(blocked.statusCode,429);
+    assert.equal(blocked.body.error,"RATE_LIMITED");
+    assert.equal(calls,5);
+  } finally {globalThis.fetch=original;}
+});
