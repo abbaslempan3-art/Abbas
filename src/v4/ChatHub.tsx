@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Sparkles } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; text: string };
-export function ChatHub() {
+export function ChatHub(_props: { tasks: unknown[]; customers: unknown[]; deals: unknown[] }) {
   const [messages, setMessages] = useState<Message[]>([{role:"assistant",text:"สวัสดีค่ะเจ้านาย อามีน่าพร้อมสนทนาผ่าน Gemini AI ค่ะ\n\nตอนนี้ยังไม่ได้เชื่อมต่อระบบงานหรือลูกค้าโดยตรง จึงยังไม่สามารถแก้ไขข้อมูลหรือสั่งงานภายนอกแทนเจ้านายได้ค่ะ"}]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
