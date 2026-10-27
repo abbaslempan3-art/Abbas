@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   if (typeof supplied !== "string" || supplied.length !== accessToken.length) return res.status(401).json({ error: "UNAUTHORIZED", message: "กรุณาใส่รหัสเข้าใช้งาน Abbas AI ที่ถูกต้องค่ะ" });
   const { timingSafeEqual } = await import("node:crypto");
   if (!timingSafeEqual(Buffer.from(supplied), Buffer.from(accessToken))) return res.status(401).json({ error: "UNAUTHORIZED", message: "รหัสเข้าใช้งานไม่ถูกต้องค่ะ" });
-  const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+  // Trust the platform-provided client address rather than the leftmost forwarded value.\n  const forwarded = req.headers["x-forwarded-for"];\n  const ip = (typeof forwarded === "string" ? forwarded.split(",").at(-1) : req.socket?.remoteAddress || "unknown").trim();
   if (throttle(ip)) return res.status(429).json({ error: "RATE_LIMITED", message: "ส่งข้อความถี่เกินไปค่ะ กรุณารอสักครู่" });
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(503).json({ error: "AI_NOT_CONFIGURED", message: "ยังไม่ได้ตั้งค่า Gemini API Key บนเซิร์ฟเวอร์ค่ะ" });
