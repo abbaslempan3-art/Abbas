@@ -1,5 +1,23 @@
 const MODEL = "gemini-2.5-flash";
 const MAX_BODY = 16000;
+// Best-effort per-instance throttling. Serverless instances do not share memory;
+// a durable edge/network rate limit is required before public release.
+const windows = new Map();
+function throttle(ip) {
+  const now = Date.now();
+  if (windows.size > 2000) {
+    for (const [k, v] of windows) if (now - v.started > 60000) windows.delete(k);
+    if (windows.size > 2000) windows.clear();
+  }
+  const entry = windows.get(ip);
+  if (!entry || now - entry.started >= 60000) {
+    windows.set(ip, { started: now, count: 1 });
+    return false;
+  }
+  entry.count++;
+  return entry.count > 5;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -11,6 +29,8 @@ export default async function handler(req, res) {
   if (typeof supplied !== "string" || supplied.length !== accessToken.length) return res.status(401).json({ error: "UNAUTHORIZED", message: "กรุณาใส่รหัสเข้าใช้งาน Abbas AI ที่ถูกต้องค่ะ" });
   const { timingSafeEqual } = await import("node:crypto");
   if (!timingSafeEqual(Buffer.from(supplied), Buffer.from(accessToken))) return res.status(401).json({ error: "UNAUTHORIZED", message: "รหัสเข้าใช้งานไม่ถูกต้องค่ะ" });
+  const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+  if (throttle(ip)) return res.status(429).json({ error: "RATE_LIMITED", message: "ส่งข้อความถี่เกินไปค่ะ กรุณารอสักครู่" });
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(503).json({ error: "AI_NOT_CONFIGURED", message: "ยังไม่ได้ตั้งค่า Gemini API Key บนเซิร์ฟเวอร์ค่ะ" });
   try {
