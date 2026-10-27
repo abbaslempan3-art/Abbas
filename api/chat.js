@@ -34,6 +34,68 @@ export default async function handler(req, res) {
   const forwarded = req.headers["x-forwarded-for"];
   const ip = (typeof forwarded === "string" ? forwarded.split(",").at(-1) : req.socket?.remoteAddress || "unknown").trim();
   if (throttle(ip)) return res.status(429).json({ error: "RATE_LIMITED", message: "ส่งข้อความถี่เกินไปค่ะ กรุณารอสักครู่" });
+  // Claude is opt-in. Keep Gemini working until the owner configures a
+  // separate Anthropic API key and explicitly selects the Claude provider.
+  if (process.env.ABBAS_AI_PROVIDER === "claude") {
+    const claudeKey = process.env.ANTHROPIC_API_KEY;
+    if (!claudeKey) return res.status(503).json({
+      error: "CLAUDE_NOT_CONFIGURED",
+      message: "ยังไม่ได้ตั้งค่า ANTHROPIC_API_KEY ใน Vercel ค่ะ"
+    });
+    try {
+      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      const messages = body?.messages;
+      if (!Array.isArray(messages) || messages.length < 1 || messages.length > 20 ||
+        messages.some(m => !m || !["user", "assistant"].includes(m.role) ||
+          typeof m.text !== "string" || !m.text.trim() || m.text.length > 3000) ||
+        JSON.stringify(messages).length > MAX_BODY)
+        return res.status(400).json({ error: "INVALID_MESSAGES" });
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        signal: AbortSignal.timeout(20000),
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": claudeKey,
+          "anthropic-version": "2023-06-01"
+        },
+        body: JSON.stringify({
+          model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5",
+          max_tokens: 700,
+          system: "คุณคืออามีน่า ผู้ช่วย AI ของ Abbas AI ตอบภาษาไทยสุภาพ กระชับ เรียกผู้ใช้ว่าเจ้านายเมื่อเหมาะสม ห้ามอ้างว่าเชื่อมต่อเครื่องมือหรือทำงานจริงโดยไม่ได้ทำ",
+          messages: messages.map(m => ({ role: m.role, content: m.text }))
+        })
+      });
+      if (!response.ok) {
+        if (response.status === 429) return res.status(429).json({
+          error: "CLAUDE_RATE_LIMIT", message: "Claude จำกัดการใช้งานชั่วคราวค่ะ (429)"
+        });
+        if (response.status === 401 || response.status === 403) return res.status(502).json({
+          error: "CLAUDE_AUTH", message: "Claude ไม่ยอมรับ API Key หรือสิทธิ์ใช้งานค่ะ (" + response.status + ")"
+        });
+        if (response.status === 402) return res.status(502).json({
+          error: "CLAUDE_CREDITS", message: "เครดิต Claude API ไม่เพียงพอค่ะ (402)"
+        });
+        if (response.status === 404) return res.status(502).json({
+          error: "CLAUDE_MODEL", message: "Claude ไม่พบโมเดลที่ตั้งค่าไว้ค่ะ (404)"
+        });
+        return res.status(502).json({
+          error: "CLAUDE_PROVIDER_ERROR", message: "Claude ตอบกลับด้วยสถานะ " + response.status + " ค่ะ"
+        });
+      }
+      const data = await response.json();
+      const reply = Array.isArray(data.content) ? data.content
+        .filter(part => part.type === "text" && typeof part.text === "string")
+        .map(part => part.text).join("").trim() : "";
+      if (!reply) return res.status(502).json({
+        error: "CLAUDE_EMPTY_RESPONSE", message: "Claude ยังไม่ส่งคำตอบกลับมาค่ะ"
+      });
+      return res.status(200).json({ text: reply, provider: "claude" });
+    } catch {
+      return res.status(504).json({
+        error: "CLAUDE_REQUEST_FAILED", message: "เชื่อมต่อ Claude ไม่สำเร็จค่ะ"
+      });
+    }
+  }
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(503).json({ error: "AI_NOT_CONFIGURED", message: "ยังไม่ได้ตั้งค่า Gemini API Key บนเซิร์ฟเวอร์ค่ะ" });
   try {
