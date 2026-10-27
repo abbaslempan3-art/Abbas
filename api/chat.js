@@ -57,8 +57,12 @@ export default async function handler(req, res) {
     } finally { clearTimeout(timer); }
     if (!response.ok) {
       if (response.status === 429) return res.status(429).json({ error: "QUOTA_EXCEEDED", message: "โควตา Gemini ชั่วคราวเต็มแล้วค่ะ ลองใหม่ภายหลัง" });
-      if (response.status === 400 || response.status === 403) return res.status(502).json({ error: "PROVIDER_REJECTED", message: "Gemini ปฏิเสธคำขอ กรุณาตรวจสอบสิทธิ์ API และโมเดลค่ะ" });
-      return res.status(502).json({ error: "PROVIDER_UNAVAILABLE", message: "ติดต่อ Gemini ไม่สำเร็จค่ะ" });
+      if (response.status === 400) return res.status(502).json({ error: "GEMINI_BAD_REQUEST", message: "Gemini ไม่ยอมรับรูปแบบคำขอหรือการตั้งค่าโมเดลค่ะ (Google 400)" });
+      if (response.status === 401) return res.status(502).json({ error: "GEMINI_INVALID_KEY", message: "Gemini ไม่ยอมรับ API Key ค่ะ กรุณาตรวจสอบ GEMINI_API_KEY ใน Vercel (Google 401)" });
+      if (response.status === 403) return res.status(502).json({ error: "GEMINI_PERMISSION_DENIED", message: "Gemini ปฏิเสธสิทธิ์การใช้ API หรือโมเดลค่ะ (Google 403)" });
+      if (response.status === 404) return res.status(502).json({ error: "GEMINI_MODEL_NOT_FOUND", message: "ไม่พบโมเดล Gemini ที่ตั้งค่าไว้ หรือโมเดลไม่รองรับการเรียกใช้งานค่ะ (Google 404)" });
+      if (response.status >= 500) return res.status(502).json({ error: "GEMINI_UPSTREAM_ERROR", message: "บริการ Gemini ขัดข้องชั่วคราวค่ะ (Google " + response.status + ")" });
+      return res.status(502).json({ error: "PROVIDER_UNAVAILABLE", message: "Gemini ตอบกลับด้วยสถานะ " + response.status + " กรุณาตรวจสอบการตั้งค่า API ค่ะ" });
     }
     const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.filter(p => typeof p.text === "string").map(p => p.text).join("").trim();
