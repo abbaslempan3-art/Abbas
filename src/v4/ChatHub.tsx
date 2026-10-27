@@ -8,6 +8,7 @@ export function ChatHub(_props: { tasks: unknown[]; customers: unknown[]; deals:
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [accessToken, setAccessToken] = useState("");
+  const [showAccess, setShowAccess] = useState(true);
   async function submit(e: FormEvent) {
     e.preventDefault();
     const q = input.trim();
@@ -36,7 +37,8 @@ export function ChatHub(_props: { tasks: unknown[]; customers: unknown[]; deals:
     <div className="abbas-chat-center">
       {messages.length === 1 && <section className="abbas-chat-hero"><div className="abbas-hero-orb"><Sparkles size={30}/></div><h1>ABBAS <span>AI</span></h1><p>มีอะไรให้อามีน่าช่วยวันนี้คะ?</p></section>}
       <div className="abbas-chat-messages" role="log" aria-live="polite">{messages.map((m,i)=><div key={i} className={"abbas-chat-bubble "+m.role}><span>{m.role==="assistant"?"อามีน่า":"เจ้านาย"}</span><p>{m.text}</p></div>)}</div>
-      <form className="abbas-chat-form" onSubmit={submit}><input type="password" autoComplete="off" aria-label="รหัสเข้าใช้งาน Abbas AI" placeholder="รหัสเข้าใช้งาน Abbas AI (ไม่ใช่ API Key)" value={accessToken} onChange={e=>setAccessToken(e.target.value)} /><input aria-label="ข้อความถึงอามีน่า" placeholder={busy ? "อามีน่ากำลังตอบ..." : "ถามอามีน่าได้เลย..."} disabled={busy} value={input} onChange={e=>setInput(e.target.value)} /><button type="submit" className="abbas-invisible-submit" aria-label="ส่งข้อความ" tabIndex={-1}>ส่ง</button></form>
+      <section className="abbas-access-area" aria-label="การตั้งค่ารหัสเข้าใช้งาน"><button type="button" className="abbas-access-toggle" onClick={()=>setShowAccess(v=>!v)} aria-expanded={showAccess}>{showAccess ? "ซ่อนช่องรหัสเข้าใช้งาน" : "ตั้งค่ารหัสเข้าใช้งาน"} · {accessToken ? "กรอกแล้ว" : "ยังไม่ได้กรอก"}</button>{showAccess && <div className="abbas-access-fields"><label htmlFor="abbas-access-token">รหัสเข้าใช้งาน Abbas AI (ไม่ใช่ Gemini API Key)</label><input id="abbas-access-token" type="password" autoComplete="off" placeholder="กรอกรหัสส่วนตัวที่ตั้งใน Vercel" value={accessToken} onChange={e=>setAccessToken(e.target.value)} /><span>รหัสจะอยู่ในหน่วยความจำของหน้านี้เท่านั้น</span></div>}</section>
+      <form className="abbas-chat-form" onSubmit={submit}><input aria-label="ข้อความถึงอามีน่า" placeholder={busy ? "อามีน่ากำลังตอบ..." : "ถามอามีน่าได้เลย..."} disabled={busy} value={input} onChange={e=>setInput(e.target.value)} /><button type="submit" className="abbas-invisible-submit" aria-label="ส่งข้อความ" tabIndex={-1}>ส่ง</button></form>
       <p className="abbas-chat-disclaimer">Gemini AI · รหัสเข้าใช้งานเก็บเฉพาะระหว่างเปิดหน้านี้ · ไม่ใช่ API Key</p>
     </div>
   </main>;
