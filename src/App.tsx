@@ -1,3 +1,4 @@
+import { ChatHub } from "./v4/ChatHub";
 import { Workspace } from "./v3/Workspace";
 import { BackupPanel } from "./v3/BackupPanel";
 import { useWorkspace } from "./v3/useWorkspace";
@@ -64,6 +65,7 @@ type Task = {
 type Customer = { id: string; name: string; company: string; status: string };
 type Data = { projects: Project[]; tasks: Task[]; customers: Customer[] };
 type Page =
+  | "chat-v4"
   | "workspace-v3"
   | "backup"
   | "command"
@@ -219,6 +221,7 @@ function load(): { data: Data; error: string } {
   }
 }
 const nav = [
+  { id: "chat-v4", label: "อามีน่า AI", icon: Sparkles },
   { id: "workspace-v3", label: "พื้นที่ทำงาน V3", icon: PanelsTopLeft },
   { id: "backup", label: "สำรองและกู้คืน", icon: DatabaseBackup },
   { id: "command", label: "AI Command Center", icon: Terminal },
@@ -269,7 +272,7 @@ export default function App({
   const [initial] = useState(load);
   const [data, setData] = useState(initial.data);
   const [error, setError] = useState(initial.error);
-  const [page, setPage] = useState<Page>("overview");
+  const [page, setPage] = useState<Page>("chat-v4");
   const [query, setQuery] = useState("");
   const [mobile, setMobile] = useState(false);
   const [modal, setModal] = useState<{
@@ -577,6 +580,7 @@ export default function App({
               {workspaceStore.error}
             </p>
           )}
+          {page === "chat-v4" && <ChatHub tasks={data.tasks} customers={data.customers} deals={workspaceStore.data.deals} />}
           {page === "workspace-v3" && (
             <Workspace
               tasks={data.tasks}
