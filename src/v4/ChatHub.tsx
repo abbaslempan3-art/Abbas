@@ -10,8 +10,9 @@ const providers = ["ChatGPT (OpenAI)", "Claude (Anthropic)", "Gemini (Google)", 
 const day = () => { const d = new Date(); return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-"); };
 
 export function ChatHub({ tasks, customers, deals }: { tasks: Task[]; customers: Customer[]; deals: Deal[] }) {
-  const [messages, setMessages] = useState<Message[]>([{role:"assistant",text:"สวัสดีค่ะเจ้านาย อามีน่าพร้อมช่วยสรุปงานและลูกค้าจากข้อมูลในแอปค่ะ\n\nขณะนี้เป็นแชตต้นแบบแบบไม่ใช้ API จึงยังไม่ใช่ ChatGPT จริง และยังสั่งงาน AI ภายนอกไม่ได้ ลองพิมพ์ “สรุปงาน”, “ติดตามลูกค้า” หรือ “AI ที่รองรับ” ได้เลยค่ะ"}]);
+  const [messages, setMessages] = useState<Message[]>([{role:"assistant",text:"สวัสดีค่ะเจ้านาย อามีน่าพร้อมสนทนาผ่าน Gemini AI ค่ะ\n\nตอนนี้ยังไม่ได้เชื่อมต่อระบบงานหรือลูกค้าโดยตรง จึงยังไม่สามารถแก้ไขข้อมูลหรือสั่งงานภายนอกแทนเจ้านายได้ค่ะ"}]);
   const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
   function reply(q: string) {
     const today = day();
     if (/ลูกค้า|crm|ติดตาม/i.test(q)) {
@@ -34,16 +35,35 @@ export function ChatHub({ tasks, customers, deals }: { tasks: Task[]; customers:
     }
     return "อามีน่ารับข้อความแล้วค่ะ แต่ตอนนี้ยังเป็นแชตต้นแบบ ไม่ได้ส่งข้อความนี้ไปยัง ChatGPT หรือ AI อื่น และยังดำเนินการตามคำสั่งอิสระไม่ได้ค่ะ\n\nลองพิมพ์ “สรุปงาน”, “ติดตามลูกค้า” หรือ “AI ที่รองรับ” ได้เลย";
   }
-  function submit(e: FormEvent) {
-    e.preventDefault(); const q=input.trim(); if(!q) return;
-    setMessages(prev=>[...prev,{role:"user",text:q},{role:"assistant",text:reply(q)}]);setInput("");
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    const q = input.trim();
+    if (!q || busy) return;
+    const next = [...messages, { role: "user" as const, text: q }];
+    setMessages(next);
+    setInput("");
+    setBusy(true);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next.slice(1).slice(-20) })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(typeof data.message === "string" ? data.message : "ระบบ AI ไม่พร้อมใช้งานค่ะ");
+      if (typeof data.text !== "string") throw new Error("ไม่พบคำตอบจาก Gemini ค่ะ");
+      setMessages(prev => [...prev, { role: "assistant", text: data.text }]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "ไม่สามารถเชื่อมต่อ AI ได้ค่ะ";
+      setMessages(prev => [...prev, { role: "assistant", text: message + "\\n\\nสามารถลองส่งข้อความใหม่ได้ค่ะ" }]);
+    } finally { setBusy(false); }
   }
   return <main className="abbas-chat abbas-chat-only" aria-label="ABBAS AI Chat">
     <div className="abbas-chat-center">
       {messages.length === 1 && <section className="abbas-chat-hero"><div className="abbas-hero-orb"><Sparkles size={30}/></div><h1>ABBAS <span>AI</span></h1><p>มีอะไรให้อามีน่าช่วยวันนี้คะ?</p></section>}
       <div className="abbas-chat-messages" role="log" aria-live="polite">{messages.map((m,i)=><div key={i} className={"abbas-chat-bubble "+m.role}><span>{m.role==="assistant"?"อามีน่า":"เจ้านาย"}</span><p>{m.text}</p></div>)}</div>
-      <form className="abbas-chat-form" onSubmit={submit}><input aria-label="ข้อความถึงอามีน่า" placeholder="ถามอามีน่าได้เลย..." value={input} onChange={e=>setInput(e.target.value)} /><button type="submit" className="abbas-invisible-submit" aria-label="ส่งข้อความ" tabIndex={-1}>ส่ง</button></form>
-      <p className="abbas-chat-disclaimer">โหมดทดลอง · ยังไม่เชื่อมต่อ AI จริง · กด Enter เพื่อส่ง</p>
+      <form className="abbas-chat-form" onSubmit={submit}><input aria-label="ข้อความถึงอามีน่า" placeholder={busy ? "อามีน่ากำลังตอบ..." : "ถามอามีน่าได้เลย..."} disabled={busy} value={input} onChange={e=>setInput(e.target.value)} /><button type="submit" className="abbas-invisible-submit" aria-label="ส่งข้อความ" tabIndex={-1}>ส่ง</button></form>
+      <p className="abbas-chat-disclaimer">Gemini AI · กด Enter เพื่อส่ง · ไม่ควรส่งข้อมูลลับ</p>
     </div>
   </main>;
 }
