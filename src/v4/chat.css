@@ -52,3 +52,13 @@ html,body,#root{min-height:100%;}
 .abbas-chat-only .abbas-chat-messages{gap:11px}
 .abbas-chat-only .abbas-chat-bubble{padding:11px 15px;border-radius:16px}
 @media(max-width:640px){.abbas-chat-only .abbas-chat-form{min-height:46px;padding:3px 12px;border-radius:14px}.abbas-chat-only .abbas-chat-form input{font-size:14px}.abbas-chat-only .abbas-chat-center{width:100%}}
+
+/* Keep the compact composer centered on the screen in the welcome state.
+   Once the conversation starts, anchor it below the scrollable replies. */
+.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero){justify-content:center}
+.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-hero{padding:0;flex:0 0 auto}
+.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-messages{flex:0 1 auto;max-height:30vh;min-height:0}
+.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-form{margin-top:0}
+.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-disclaimer{margin-bottom:0}
+.abbas-chat-only .abbas-chat-center:not(:has(.abbas-chat-hero)) .abbas-chat-messages{flex:1;min-height:0}
+@media(max-width:640px){.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-messages{max-height:35vh}}
