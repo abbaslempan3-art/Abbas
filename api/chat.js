@@ -56,7 +56,26 @@ export default async function handler(req, res) {
         })
       });
     } finally { clearTimeout(timer); }
-    // A 404 may mean the model is unavailable for this API key. Discover the\n    // key-visible models and retry once with a supported Flash text model.\n    if (response.status === 404) {\n      try {\n        const listResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", { headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(5000) });\n        if (listResponse.ok) {\n          const catalog = await listResponse.json();\n          const available = new Set((catalog.models || []).filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent")).map(m => m.name));\n          const fallback = FALLBACK_MODELS.find(name => available.has("models/" + name));\n          if (fallback) {\n            response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + fallback + ":generateContent", {\n              method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key },\n              signal: AbortSignal.timeout(12000),\n              body: JSON.stringify({ systemInstruction: { parts: [{ text: "คุณคืออามีน่า ผู้ช่วย AI ของ Abbas AI ตอบเป็นภาษาไทย สุภาพ กระชับ เรียกผู้ใช้ว่าเจ้านายเมื่อเหมาะสม" }] }, contents, generationConfig: { maxOutputTokens: 700, temperature: 0.6 } })\n            });\n          }\n        }\n      } catch { /* Keep original provider status if discovery fails. */ }\n    }\n    if (!response.ok) {
+    // A 404 may mean the model is unavailable for this API key. Discover the
+    // key-visible models and retry once with a supported Flash text model.
+    if (response.status === 404) {
+      try {
+        const listResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", { headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(5000) });
+        if (listResponse.ok) {
+          const catalog = await listResponse.json();
+          const available = new Set((catalog.models || []).filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent")).map(m => m.name));
+          const fallback = FALLBACK_MODELS.find(name => available.has("models/" + name));
+          if (fallback) {
+            response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + fallback + ":generateContent", {
+              method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+              signal: AbortSignal.timeout(12000),
+              body: JSON.stringify({ systemInstruction: { parts: [{ text: "คุณคืออามีน่า ผู้ช่วย AI ของ Abbas AI ตอบเป็นภาษาไทย สุภาพ กระชับ เรียกผู้ใช้ว่าเจ้านายเมื่อเหมาะสม" }] }, contents, generationConfig: { maxOutputTokens: 700, temperature: 0.6 } })
+            });
+          }
+        }
+      } catch { /* Keep original provider status if discovery fails. */ }
+    }
+    if (!response.ok) {
       if (response.status === 429) return res.status(429).json({ error: "QUOTA_EXCEEDED", message: "โควตา Gemini ชั่วคราวเต็มแล้วค่ะ ลองใหม่ภายหลัง" });
       if (response.status === 400) return res.status(502).json({ error: "GEMINI_BAD_REQUEST", message: "Gemini ไม่ยอมรับรูปแบบคำขอหรือการตั้งค่าโมเดลค่ะ (Google 400)" });
       if (response.status === 401) return res.status(502).json({ error: "GEMINI_INVALID_KEY", message: "Gemini ไม่ยอมรับ API Key ค่ะ กรุณาตรวจสอบ GEMINI_API_KEY ใน Vercel (Google 401)" });
