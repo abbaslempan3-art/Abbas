@@ -1,6 +1,6 @@
 import "./chat.css";
 import { useState, type FormEvent } from "react";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, ShieldCheck, Orbit, Zap } from "lucide-react";
 
 type Task = { name: string; due: string; status: string; priority: string };
 type Customer = { id: string; name: string; status: string };
@@ -39,9 +39,10 @@ export function ChatHub({ tasks, customers, deals }: { tasks: Task[]; customers:
     setMessages(prev=>[...prev,{role:"user",text:q},{role:"assistant",text:reply(q)}]);setInput("");
   }
   return <main className="abbas-chat" aria-label="ABBAS AI Chat">
-    <header className="abbas-chat-header"><Sparkles size={22}/><div><strong>ABBAS AI · อามีน่า</strong><small>Chat-first V4 · โหมดต้นแบบในเครื่อง · ไม่ใช้ API</small></div></header>
+    <header className="abbas-chat-header"><div className="abbas-ai-mark"><Orbit size={24}/></div><div><strong>ABBAS <em>AI</em></strong><small>AMINA · INTELLIGENT WORKSPACE</small></div><span className="abbas-chat-mode"><span className="abbas-status-light" /> DEMO MODE</span></header>
+    {messages.length === 1 && <section className="abbas-chat-hero"><div className="abbas-hero-orb"><Sparkles size={34}/></div><div className="abbas-eyebrow">YOUR INTELLIGENT COMMAND CENTER</div><h1>Good to see you, <span>Boss.</span></h1><p>มีอะไรให้อามีน่าช่วยจัดการวันนี้คะ?</p><div className="abbas-provider-strip"><span>AI ECOSYSTEM</span><span>ChatGPT</span><span>Claude</span><span>Gemini</span><span>Grok</span><span>+ more</span></div><p className="abbas-provider-note">รายชื่อการเชื่อมต่อในอนาคต · ยังไม่เชื่อมโมเดลจริง</p></section>}
     <div className="abbas-chat-messages" role="log" aria-live="polite">{messages.map((m,i)=><div key={i} className={"abbas-chat-bubble "+m.role}><span>{m.role==="assistant"?"อามีน่า":"เจ้านาย"}</span><p>{m.text}</p></div>)}</div>
-    <form className="abbas-chat-form" onSubmit={submit}><input aria-label="ข้อความถึงอามีน่า" placeholder="ถามหรือสั่งงานอามีน่า..." value={input} onChange={e=>setInput(e.target.value)} /><button type="submit" aria-label="ส่งข้อความ" disabled={!input.trim()}><Send size={20}/></button></form>
+    <div className="abbas-chat-composer"><form className="abbas-chat-form" onSubmit={submit}><Sparkles className="abbas-input-sparkle" size={19}/><input aria-label="ข้อความถึงอามีน่า" placeholder="Message Amina... ถามหรือสั่งงานได้เลย" value={input} onChange={e=>setInput(e.target.value)} /><button type="submit" aria-label="ส่งข้อความ" disabled={!input.trim()}><Send size={19}/></button></form><div className="abbas-composer-meta"><span><ShieldCheck size={13}/> LOCAL & PRIVATE</span><span><Zap size={13}/> READY TO ASSIST</span></div></div>
     <p className="abbas-chat-disclaimer">ข้อมูลสนทนานี้อยู่ในหน้านี้ชั่วคราว ไม่ได้ส่งไปยังผู้ให้บริการ AI ภายนอก และจะหายเมื่อรีโหลด</p>
   </main>;
 }
