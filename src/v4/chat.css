@@ -73,3 +73,7 @@ html,body,#root{min-height:100%;}
 .abbas-chat-only .abbas-access-fields span{font-size:11px;color:#9caac8}
 .abbas-chat-only .abbas-chat-form{margin-top:0}
 .abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-access-area{width:100%}
+
+.abbas-chat-only .abbas-access-confirm{align-self:flex-start;border:0;border-radius:10px;padding:9px 18px;background:#747bea;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.abbas-chat-only .abbas-access-confirm:disabled{opacity:.5;cursor:not-allowed}
+.abbas-chat-only .abbas-access-status{margin:0;font-size:12px;color:#c4d4f9}
