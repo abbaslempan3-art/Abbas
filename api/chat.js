@@ -1,5 +1,5 @@
 const MODEL = "gemini-2.5-flash";
-const FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+const FALLBACK_MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
 const MAX_BODY = 16000;
 // Best-effort per-instance throttling. Serverless instances do not share memory;
 // a durable edge/network rate limit is required before public release.
