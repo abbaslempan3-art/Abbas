@@ -105,3 +105,36 @@ test("Gemini 404 tries successive catalog-listed Flash models (mocked)", async (
     assert.equal(urls.length,4);
   } finally {globalThis.fetch=original;}
 });
+
+test("Claude provider sends authenticated request and returns text (mocked)",async()=>{
+  process.env.ABBAS_AI_ACCESS_TOKEN=access;
+  process.env.ABBAS_AI_PROVIDER="claude";
+  process.env.ANTHROPIC_API_KEY="test-claude-key";
+  const original=globalThis.fetch;
+  globalThis.fetch=async(url,options)=>{
+    assert.equal(url,"https://api.anthropic.com/v1/messages");
+    assert.equal(options.headers["x-api-key"],"test-claude-key");
+    assert.equal(options.headers["anthropic-version"],"2023-06-01");
+    return {ok:true,json:async()=>({content:[{type:"text",text:"สวัสดีค่ะเจ้านาย"}]})};
+  };
+  try {
+    const result=await invoke({token:access,ip:"198.51.100.230",body:{messages:[{role:"user",text:"สวัสดี"}]}});
+    assert.equal(result.statusCode,200);
+    assert.equal(result.body.provider,"claude");
+    assert.equal(result.body.text,"สวัสดีค่ะเจ้านาย");
+  } finally {
+    globalThis.fetch=original;
+    delete process.env.ABBAS_AI_PROVIDER;
+    delete process.env.ANTHROPIC_API_KEY;
+  }
+});
+test("Claude requires API key when explicitly selected",async()=>{
+  process.env.ABBAS_AI_ACCESS_TOKEN=access;
+  process.env.ABBAS_AI_PROVIDER="claude";
+  delete process.env.ANTHROPIC_API_KEY;
+  try {
+    const result=await invoke({token:access,ip:"198.51.100.231",body:{messages:[{role:"user",text:"hello"}]}});
+    assert.equal(result.statusCode,503);
+    assert.equal(result.body.error,"CLAUDE_NOT_CONFIGURED");
+  } finally {delete process.env.ABBAS_AI_PROVIDER;}
+});
