@@ -83,3 +83,25 @@ test("per-instance throttle blocks sixth authenticated request without provider 
     assert.equal(calls,5);
   } finally {globalThis.fetch=original;}
 });
+
+test("Gemini 404 tries successive catalog-listed Flash models (mocked)", async () => {
+  process.env.ABBAS_AI_ACCESS_TOKEN=access;
+  process.env.GEMINI_API_KEY="test-only-key";
+  const original=globalThis.fetch;
+  const urls=[];
+  globalThis.fetch=async (url) => {
+    urls.push(String(url));
+    if (String(url).includes("pageSize=100")) return {ok:true,json:async()=>({models:[
+      {name:"models/gemini-2.5-flash-lite",supportedGenerationMethods:["generateContent"]},
+      {name:"models/gemini-2.0-flash",supportedGenerationMethods:["generateContent"]}
+    ]})};
+    if (String(url).includes("gemini-2.0-flash:generateContent")) return {ok:true,json:async()=>({candidates:[{content:{parts:[{text:"ตอบได้ค่ะ"}]}}]})};
+    return {ok:false,status:404};
+  };
+  try {
+    const result=await invoke({token:access,ip:"198.51.100.201",body:{messages:[{role:"user",text:"สวัสดี"}]}});
+    assert.equal(result.statusCode,200);
+    assert.equal(result.body.text,"ตอบได้ค่ะ");
+    assert.equal(urls.length,4);
+  } finally {globalThis.fetch=original;}
+});
