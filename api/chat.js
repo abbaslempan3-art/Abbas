@@ -4,6 +4,13 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("X-Content-Type-Options", "nosniff");
   if (req.method !== "POST") { res.setHeader("Allow", "POST"); return res.status(405).json({ error: "METHOD_NOT_ALLOWED" }); }
+  // Server-side access gate; deny all calls until explicitly configured.
+  const accessToken = process.env.ABBAS_AI_ACCESS_TOKEN;
+  if (!accessToken || accessToken.length < 24) return res.status(503).json({ error: "ACCESS_NOT_CONFIGURED", message: "ยังไม่ได้ตั้งรหัสเข้าใช้งาน Abbas AI บนเซิร์ฟเวอร์ค่ะ" });
+  const supplied = req.headers["x-abbas-access-token"];
+  if (typeof supplied !== "string" || supplied.length !== accessToken.length) return res.status(401).json({ error: "UNAUTHORIZED", message: "กรุณาใส่รหัสเข้าใช้งาน Abbas AI ที่ถูกต้องค่ะ" });
+  const { timingSafeEqual } = await import("node:crypto");
+  if (!timingSafeEqual(Buffer.from(supplied), Buffer.from(accessToken))) return res.status(401).json({ error: "UNAUTHORIZED", message: "รหัสเข้าใช้งานไม่ถูกต้องค่ะ" });
   const key = process.env.GEMINI_API_KEY;
   if (!key) return res.status(503).json({ error: "AI_NOT_CONFIGURED", message: "ยังไม่ได้ตั้งค่า Gemini API Key บนเซิร์ฟเวอร์ค่ะ" });
   try {
