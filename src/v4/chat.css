@@ -29,3 +29,18 @@
 .abbas-chat-disclaimer{text-align:center;font-size:11px;color:#8290ac;margin:0 0 3px}
 @media(max-width:640px){.abbas-chat{min-height:76dvh;padding:15px 13px;border-radius:18px;gap:12px}.abbas-chat-header strong{font-size:16px}.abbas-chat-header small{font-size:8px;letter-spacing:.1em}.abbas-chat-mode{font-size:9px;padding:7px}.abbas-chat-hero{padding-top:20px}.abbas-hero-orb{width:61px;height:61px;margin-bottom:20px}.abbas-chat-bubble{max-width:95%;padding:12px 14px}.abbas-provider-strip span{font-size:10px;padding:6px 9px}.abbas-chat-form input{font-size:13px}.abbas-chat-disclaimer{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.abbas-chat *{transition:none!important}}
+
+/* Full-screen minimal chat, without navigation, badges, chips or visible buttons. */
+html,body,#root{min-height:100%;}
+.abbas-chat.abbas-chat-only{position:fixed;inset:0;z-index:1000;max-width:none;min-height:100dvh;height:100dvh;margin:0;padding:clamp(18px,4vw,48px);border:0;border-radius:0;overflow:hidden;background:radial-gradient(ellipse 48% 45% at 52% 18%,rgba(85,78,200,.24),transparent 75%),radial-gradient(ellipse 35% 50% at 85% 80%,rgba(0,177,196,.13),transparent 75%),#080c19;color:#eef2ff}
+.abbas-chat-only .abbas-chat-center{width:min(100%,800px);height:100%;min-height:0;margin:auto;display:flex;flex-direction:column;gap:18px}
+.abbas-chat-only .abbas-chat-hero{padding:clamp(20px,6vh,68px) 0 5px}
+.abbas-chat-only .abbas-chat-hero h1{font-size:clamp(40px,7vw,70px);letter-spacing:-.055em;margin:14px 0 8px}
+.abbas-chat-only .abbas-chat-hero p{margin:0;color:#bac6df;font-size:clamp(14px,2vw,18px)}
+.abbas-chat-only .abbas-chat-messages{flex:1;min-height:0;max-height:none;padding:12px 3px;overflow:auto}
+.abbas-chat-only .abbas-chat-form{display:flex;align-items:center;margin-top:auto;min-height:68px;border:1px solid rgba(151,166,239,.28);border-radius:23px;background:rgba(25,33,61,.84);padding:8px 19px;box-shadow:0 12px 44px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.05)}
+.abbas-chat-only .abbas-chat-form:focus-within{border-color:rgba(162,170,255,.7);box-shadow:0 0 0 3px rgba(113,105,235,.11),0 12px 44px rgba(0,0,0,.25)}
+.abbas-chat-only .abbas-chat-form input{width:100%;font-size:16px;color:#f3f5ff}
+.abbas-chat-only .abbas-invisible-submit{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
+.abbas-chat-only .abbas-chat-disclaimer{margin:0 0 3px;font-size:11px;color:#7e8dac}
+@media(max-width:640px){.abbas-chat.abbas-chat-only{padding:16px 14px 22px}.abbas-chat-only .abbas-chat-center{gap:12px}.abbas-chat-only .abbas-chat-hero{padding-top:26px}.abbas-chat-only .abbas-chat-form{min-height:62px;padding:8px 14px}.abbas-chat-only .abbas-chat-bubble{max-width:95%}}
