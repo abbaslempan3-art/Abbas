@@ -72,7 +72,7 @@ export default async function handler(req, res) {
             .filter(m => typeof m.name === "string" &&
               Array.isArray(m.supportedGenerationMethods) &&
               m.supportedGenerationMethods.includes("generateContent"))
-            .map(m => m.name.replace(/^models\\//, ""))
+            .map(m => m.name.startsWith("models/") ? m.name.slice(7) : m.name)
             .filter(name => /^gemini-/i.test(name) && /flash/i.test(name) &&
               !/image|tts|audio|live/i.test(name) && name !== MODEL);
           const prioritized = [
