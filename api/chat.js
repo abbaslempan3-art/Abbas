@@ -56,28 +56,54 @@ export default async function handler(req, res) {
         })
       });
     } finally { clearTimeout(timer); }
-    // A 404 may mean the model is unavailable for this API key. Discover the
-    // key-visible models and retry once with a supported Flash text model.
+    // Discover models exposed to this API key and try each eligible text Flash
+    // model on a model-not-found response. Never log keys or provider bodies.
     let modelDiagnostic = "MODEL_NOT_AVAILABLE";
     if (response.status === 404) {
       try {
-        const listResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", { headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(5000) });
-        if (listResponse.ok) {
-          const catalog = await listResponse.json();
-          const available = new Set((catalog.models || []).filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent")).map(m => m.name));
-          const fallback = FALLBACK_MODELS.find(name => name !== MODEL && available.has("models/" + name)) || [...available].map(name => name.replace(/^models\//, "")).filter(name => /gemini/i.test(name) && /flash/i.test(name) && !/image|tts|audio|live|preview/i.test(name) && name !== MODEL).sort().reverse()[0];
-          modelDiagnostic = fallback ? "FALLBACK_REJECTED" : "NO_COMPATIBLE_MODEL";
-          if (fallback) {
-            response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + fallback + ":generateContent", {
-              method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-              signal: AbortSignal.timeout(12000),
-              body: JSON.stringify({ systemInstruction: { parts: [{ text: "คุณคืออามีน่า ผู้ช่วย AI ของ Abbas AI ตอบเป็นภาษาไทย สุภาพ กระชับ เรียกผู้ใช้ว่าเจ้านายเมื่อเหมาะสม" }] }, contents, generationConfig: { maxOutputTokens: 700, temperature: 0.6 } })
-            });
-          }
-        } else {
+        const listResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", {
+          headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(5000)
+        });
+        if (!listResponse.ok) {
           modelDiagnostic = "MODEL_LIST_HTTP_" + listResponse.status;
+        } else {
+          const catalog = await listResponse.json();
+          const available = (catalog.models || [])
+            .filter(m => typeof m.name === "string" &&
+              Array.isArray(m.supportedGenerationMethods) &&
+              m.supportedGenerationMethods.includes("generateContent"))
+            .map(m => m.name.replace(/^models\\//, ""))
+            .filter(name => /^gemini-/i.test(name) && /flash/i.test(name) &&
+              !/image|tts|audio|live/i.test(name) && name !== MODEL);
+          const prioritized = [
+            ...FALLBACK_MODELS.filter(name => name !== MODEL && available.includes(name)),
+            ...available.filter(name => !FALLBACK_MODELS.includes(name)).sort().reverse()
+          ];
+          modelDiagnostic = prioritized.length ? "FALLBACK_REJECTED" : "NO_COMPATIBLE_MODEL";
+          for (const candidate of prioritized.slice(0, 8)) {
+            const attempt = await fetch(
+              "https://generativelanguage.googleapis.com/v1beta/models/" +
+                encodeURIComponent(candidate) + ":generateContent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+                signal: AbortSignal.timeout(12000),
+                body: JSON.stringify({
+                  systemInstruction: { parts: [{ text: "คุณคืออามีน่า ผู้ช่วย AI ของ Abbas AI ตอบเป็นภาษาไทย สุภาพ กระชับ เรียกผู้ใช้ว่าเจ้านายเมื่อเหมาะสม" }] },
+                  contents, generationConfig: { maxOutputTokens: 700, temperature: 0.6 }
+                })
+              }
+            );
+            response = attempt;
+            if (attempt.ok) { modelDiagnostic = "FALLBACK_SUCCEEDED"; break; }
+            if (attempt.status !== 404) {
+              modelDiagnostic = "FALLBACK_HTTP_" + attempt.status;
+              break;
+            }
+          }
         }
-      } catch { modelDiagnostic = "MODEL_LIST_UNREACHABLE"; }
+      } catch {
+        modelDiagnostic = "MODEL_DISCOVERY_OR_RETRY_FAILED";
+      }
     }
     if (!response.ok) {
       if (response.status === 429) return res.status(429).json({ error: "QUOTA_EXCEEDED", message: "โควตา Gemini ชั่วคราวเต็มแล้วค่ะ ลองใหม่ภายหลัง" });
