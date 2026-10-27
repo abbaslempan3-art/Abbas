@@ -2136,6 +2136,7 @@
                 <button class="primary full" id="checkout">
                   สรุปการขายและบันทึกบิล →
                 </button>
+                <p id="checkoutIssue" class="notice hidden" role="alert"></p>
                 <div class="cart-actions">
                   <button
                     class="delivery-action"
@@ -2310,6 +2311,7 @@
         orders = [],
         cart = [],
         saving = false,
+        incompleteOrderId = null,
         activeCategory = "all";
       function check(r) {
         if (r.error) throw r.error;
@@ -2655,12 +2657,14 @@
           "สรุปการขาย (" + el("net").textContent + ") →";
         el("checkout").disabled =
           saving ||
+          Boolean(incompleteOrderId) ||
           !cart.length ||
           !Number.isFinite(discount) ||
           discount < 0 ||
           discount > sum;
       }
       document.addEventListener("click", (e) => {
+        if (saving && e.target.closest("#sale")) return;
         const cat = e.target.closest("[data-category]"),
           pay = e.target.closest("[data-payment]");
         if (cat) {
@@ -2787,13 +2791,19 @@
           .scrollIntoView({ behavior: "smooth", block: "center" });
       };
       el("checkout").onclick = async () => {
-        if (saving || !cart.length) return;
+        if (saving || incompleteOrderId || !user || !cart.length) return;
         const subtotal = cart.reduce((s, x) => s + x.qty * Number(x.price), 0),
           discount = Number(el("discount").value);
         if (!Number.isFinite(discount) || discount < 0 || discount > subtotal)
           return alert("ส่วนลดไม่ถูกต้อง");
         saving = true;
+        let createdOrderId = null,
+          itemsSaved = false;
+        el("sale").inert = true;
+        el("sale").setAttribute("aria-busy", "true");
         el("checkout").disabled = true;
+        el("checkout").textContent = "กำลังบันทึกบิล…";
+        el("status").textContent = "กำลังบันทึกบิล กรุณารอสักครู่";
         try {
           const channel = el("channel").value,
             payment = ["grab", "lineman", "shopee", "robinhood"].includes(
@@ -2826,17 +2836,13 @@
               .select("id")
               .single(),
           );
-          try {
-            check(
-              await db
-                .from("pos_order_items")
-                .insert(lines.map((x) => ({ ...x, order_id: o.id }))),
-            );
-          } catch (e) {
-            el("status").textContent =
-              "บิลถูกสร้างแต่รายการสินค้าไม่สมบูรณ์ กรุณาตรวจสอบฐานข้อมูลก่อนทำรายการใหม่";
-            throw e;
-          }
+          createdOrderId = o.id;
+          check(
+            await db
+              .from("pos_order_items")
+              .insert(lines.map((x) => ({ ...x, order_id: o.id }))),
+          );
+          itemsSaved = true;
           cart = [];
           el("discount").value = 0;
           el("cartNote").value = "";
@@ -2844,8 +2850,25 @@
           el("status").textContent = "บันทึกบิลลง Supabase สำเร็จ";
         } catch (e) {
           error(e);
+          if (createdOrderId && !itemsSaved) {
+            incompleteOrderId = createdOrderId;
+            el("checkoutIssue").classList.remove("hidden");
+            el("checkoutIssue").textContent =
+              "บิล #" +
+              createdOrderId +
+              " ถูกสร้างแล้ว แต่รายการสินค้าอาจไม่ครบ กรุณาให้ผู้ดูแลตรวจสอบบิลนี้ก่อนเริ่มบิลใหม่ ห้ามกดบันทึกซ้ำ";
+            el("status").textContent =
+              el("checkoutIssue").textContent + " · " + (e.message || e);
+          } else if (itemsSaved) {
+            el("status").textContent =
+              "บันทึกบิล #" +
+              createdOrderId +
+              " สำเร็จแล้ว แต่โหลดข้อมูลล่าสุดไม่สำเร็จ กรุณารีเฟรชรายงาน ไม่ต้องบันทึกบิลซ้ำ";
+          }
         } finally {
           saving = false;
+          el("sale").inert = false;
+          el("sale").removeAttribute("aria-busy");
           drawCart();
         }
       };
@@ -3017,7 +3040,7 @@
           b.setAttribute("aria-pressed", String(selected));
         });
       }
-      // Use existing menu image URLs when supplied; illustrative photos never change menu records.
+      // Use existing menu image URLs when supplied; missing photos stay as placeholders.
       // image_path is an existing text column. Small, normalized raster images stay under its existing menu RLS.
       function safeMenuImage(value) {
         if (typeof value !== "string") return "";
@@ -3202,6 +3225,18 @@
       el("cancelMenuImage").onclick = resetMenuImage;
       el("clearCart").onclick = () => {
         if (saving) return;
+        if (
+          incompleteOrderId &&
+          !confirm(
+            "ตรวจสอบบิล #" +
+              incompleteOrderId +
+              " ที่บันทึกไม่สมบูรณ์แล้วหรือไม่? การเริ่มบิลใหม่จะล้างเฉพาะตะกร้า และไม่ลบหรือแก้ไขบิลเดิม",
+          )
+        )
+          return;
+        incompleteOrderId = null;
+        el("checkoutIssue").classList.add("hidden");
+        el("checkoutIssue").textContent = "";
         cart = [];
         el("discount").value = 0;
         el("cartNote").value = "";
