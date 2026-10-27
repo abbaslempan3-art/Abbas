@@ -62,3 +62,14 @@ html,body,#root{min-height:100%;}
 .abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-disclaimer{margin-bottom:0}
 .abbas-chat-only .abbas-chat-center:not(:has(.abbas-chat-hero)) .abbas-chat-messages{flex:1;min-height:0}
 @media(max-width:640px){.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-chat-messages{max-height:35vh}}
+
+/* Dedicated access-code settings, separate from the conversation composer. */
+.abbas-chat-only .abbas-access-area{flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.abbas-chat-only .abbas-access-toggle{align-self:flex-start;background:transparent;border:0;color:#aebcf0;font:inherit;font-size:12px;padding:5px 0;cursor:pointer}
+.abbas-chat-only .abbas-access-toggle:hover{text-decoration:underline}
+.abbas-chat-only .abbas-access-fields{display:flex;flex-direction:column;gap:7px;padding:12px 14px;border:1px solid rgba(151,166,239,.24);border-radius:14px;background:rgba(25,33,61,.65)}
+.abbas-chat-only .abbas-access-fields label{font-size:12px;color:#dce5ff}
+.abbas-chat-only .abbas-access-fields input{width:100%;min-width:0;box-sizing:border-box;border:1px solid rgba(151,166,239,.35);border-radius:10px;padding:10px 12px;background:#10182e;color:#fff;font:inherit;font-size:14px}
+.abbas-chat-only .abbas-access-fields span{font-size:11px;color:#9caac8}
+.abbas-chat-only .abbas-chat-form{margin-top:0}
+.abbas-chat-only .abbas-chat-center:has(.abbas-chat-hero) .abbas-access-area{width:100%}
