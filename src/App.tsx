@@ -436,8 +436,9 @@ export default function App({
   }
   const matching = (text: string) =>
     text.toLowerCase().includes(query.toLowerCase());
-  if (page === "chat-v4") return <ChatHub tasks={data.tasks} customers={data.customers} deals={workspaceStore.data.deals} />;
-  return (
+  return page === "chat-v4" ? (
+    <ChatHub tasks={data.tasks} customers={data.customers} deals={workspaceStore.data.deals} />
+  ) : (
     <div className="app">
       <aside className={mobile ? "sidebar open" : "sidebar"}>
         <a
@@ -581,7 +582,6 @@ export default function App({
               {workspaceStore.error}
             </p>
           )}
-          {page === "chat-v4" && <ChatHub tasks={data.tasks} customers={data.customers} deals={workspaceStore.data.deals} />}
           {page === "workspace-v3" && (
             <Workspace
               tasks={data.tasks}
