@@ -1,27 +1,446 @@
-<!doctype html><html lang="th"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jeerapan POS Cloud</title><style>
-*{box-sizing:border-box}body{margin:0;background:#fff9ef;color:#402324;font-family:system-ui,sans-serif}header{background:#b20d22;color:white;padding:18px 5vw;display:flex;gap:12px;align-items:center}header img{width:56px;height:56px;background:white;border-radius:50%;padding:4px}h1{font-size:23px;margin:0}main{max-width:1100px;margin:20px auto;padding:0 14px}.card{background:white;padding:20px;border:1px solid #f0d9ba;border-radius:14px;margin:12px 0}button,input,select{font:inherit;padding:10px;border:1px solid #d8c4b3;border-radius:8px}button{cursor:pointer;background:white}button.primary,button.selected{background:#b20d22;color:white}nav,.row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.grid{display:grid;grid-template-columns:2fr 1fr;gap:15px}.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}.tile{text-align:left;min-height:85px}.tile span{display:block;color:#b20d22}.line{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #eee}.hidden{display:none!important}.muted{color:#746660}.notice{background:#fff0c5;padding:12px;border-radius:9px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+<!doctype html>
+<html lang="th">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jeerapan POS Cloud</title>
+<style>
+:root{--red:#bd0024;--ink:#242329;--muted:#77767f;--border:#ececef;--pink:#fff0f2}
+*{box-sizing:border-box}
+body{margin:0;background:#fcfbfa;color:var(--ink);font-family:Arial,"Noto Sans Thai",system-ui,sans-serif;font-size:14px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;background:white;color:inherit}
+button,input,select,textarea{border:1px solid #dedee3;border-radius:10px;padding:10px}
+button:hover{border-color:var(--red)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #efb636;outline-offset:2px}
+.hidden{display:none!important}
+.muted,.muted-note{color:var(--muted)}
+.muted-note{font-size:12px;line-height:1.5}
+header{height:87px;background:linear-gradient(110deg,#a9001c,#bd0928 70%,#a3001d);color:white;display:flex;align-items:center;gap:22px;padding:10px 28px}
+header img{width:70px;height:70px;background:white;border-radius:50%;padding:3px}
+h1{font-size:27px;margin:0 0 5px;font-weight:800}
+header small{font-size:15px}
+.top-status{margin-left:auto;display:flex;align-items:center;gap:16px}
+.top-pill{border:1px solid #ffffff35;border-radius:17px;padding:11px 16px;font-size:13px;white-space:nowrap}
+.top-pill b{color:#ddd}
+.top-pill.connected b{color:#1dd66b}
+.profile{display:flex;align-items:center;gap:12px;max-width:240px}
+.avatar{display:grid;place-items:center;background:#ffffff50;width:48px;height:48px;border-radius:50%;font-size:24px}
+.profile span:last-child{overflow-wrap:anywhere;font-size:13px}
+.workspace{display:flex;min-height:calc(100vh - 87px)}
+.side{width:232px;flex-shrink:0;padding:22px 17px 16px;border-right:1px solid var(--border);background:white;display:flex;flex-direction:column;gap:9px}
+.side button{display:flex;align-items:center;gap:16px;text-align:left;border:0;background:transparent;padding:13px 14px;min-height:47px;font-size:15px;border-radius:10px}
+.side button.selected{color:var(--red);background:#fde9ed;font-weight:700}
+.nav-icon{font-size:23px;width:24px;text-align:center}
+.side-bottom{margin-top:auto;padding:18px;border:1px solid #f0e8e0;border-radius:14px;background:linear-gradient(150deg,white,#fff8ef)}
+.scooter{display:block;text-align:center;font-size:65px;margin-bottom:10px}
+.side-bottom p{font-size:13px;color:#666;line-height:1.6;margin:5px 0 12px}
+.side .side-bottom button{background:#ffdde2;color:var(--red);padding:10px;font-size:13px;justify-content:center}
+.content{flex:1;min-width:0;padding:15px 18px 24px}
+.notice{background:#fff6df;color:#755b28;padding:8px 12px;border-radius:9px;font-size:11px;margin-bottom:12px}
+.account-row{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:8px}
+.account-row #who{font-size:12px;color:#777}
+.account-row button{padding:5px 10px;font-size:12px}
+.card{background:white;border:1px solid var(--border);border-radius:16px;padding:20px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.sale-title{display:flex;justify-content:space-between;gap:20px;align-items:center;margin:0 0 18px}
+.sale-title h2{font-size:24px;margin:0 0 3px}
+.sale-title small{font-size:13px}
+.sale-title input{width:min(40vw,360px);height:44px;background:#fafafa}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:20px;align-items:start}
+#sale>.grid>.card:first-child{border:0;background:transparent;padding:0;min-width:0}
+#sale>.grid>.card:first-child>h2{display:none}
+.channel-tabs{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #e3dfe0;border-radius:12px;overflow:hidden;margin-bottom:14px;background:white}
+.channel-tabs button{display:flex;gap:16px;justify-content:center;align-items:center;border:0;border-right:1px solid #e3dfe0;border-radius:0;padding:13px 7px;font-weight:700;font-size:15px}
+.channel-tabs button:last-child{border-right:0}
+.channel-tabs .active{background:var(--red);color:white}
+.channel-tabs small{display:block;font-weight:400;font-size:12px;margin-top:4px}
+.channel-icon{font-size:25px}
+.channel-select-row{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.channel-select-row select{flex:1}
+.catbar{display:flex;justify-content:space-between;gap:6px;overflow:auto;background:white;border:1px solid var(--border);border-radius:14px;padding:6px 10px;margin-bottom:14px}
+.catbar button{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:72px;font-size:12px;white-space:nowrap;background:transparent;border:0;padding:7px 6px}
+.category-icon{display:grid;place-items:center;width:39px;height:39px;border-radius:12px;background:#f9f4ef;font-size:23px}
+.catbar .active{color:var(--red);background:var(--pink);font-weight:700}
+.catbar .active .category-icon{background:var(--red);color:white}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.tile{padding:0;overflow:hidden;text-align:left;border:1px solid #e4e3e5;border-radius:14px;background:white;transition:transform .15s}
+.tile:hover{transform:translateY(-2px)}
+.tile-art{height:98px;background:#f6eee5;display:grid;place-items:center;overflow:hidden;font-size:48px}
+.tile-art img{width:100%;height:100%;object-fit:cover}
+.tile-info{padding:8px 11px}
+.tile strong{display:block;font-size:12px;line-height:1.4}
+.tile small{font-size:10px;color:#777;display:block}
+.tile-footer{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.tile-footer span{color:var(--red);font-size:18px;font-weight:800}
+.tile-plus{width:28px;height:28px;border-radius:50%;background:var(--red);color:white;font-size:23px;display:grid;place-items:center}
+.cart-card{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding:19px}
+.cart-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.cart-heading h2{font-size:21px;margin:0}
+.cart-heading button{font-size:11px;padding:6px 9px}
+.line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0f0f2}
+#cart{max-height:290px;overflow:auto}
+#cart .line{display:grid;grid-template-columns:72px minmax(0,1fr) auto auto;gap:10px;min-height:80px}
+#cart .cart-art{width:72px;height:64px;border-radius:9px;object-fit:cover;background:#f8eee7}
+.cart-description{font-size:13px;font-weight:700}
+.quantity{display:flex;align-items:center;width:max-content;border:1px solid #dedee3;border-radius:8px;margin-top:5px;overflow:hidden;font-weight:400}
+.quantity button{border:0;border-radius:0;background:#fafafa;padding:4px 10px;font-size:17px}
+.quantity span{min-width:28px;text-align:center}
+.cart-amount{color:var(--red);font-size:14px;white-space:nowrap}
+.remove-item{border:0;padding:3px;color:#777;font-size:19px}
+.cart-meta{width:100%;margin:7px 0 10px;background:#fafafa;font-size:12px;resize:vertical}
+.note-label{display:block;font-size:12px;margin-top:13px;color:#777}
+.totals .line{border:0;padding:7px 0}
+.discount-label{display:flex;align-items:center;gap:10px}
+.discount-label input{width:100px;padding:8px}
+.net-line{margin-top:12px;border-top:1px solid var(--border);border-bottom:0;padding:17px 0;font-size:20px}
+#net{color:var(--red);font-size:23px}
+.payment-title{margin:0 0 9px;font-size:14px;font-weight:400}
+.paychoices{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.paychoices button{text-align:left;font-size:12px;padding:13px 10px}
+.paychoices .active{border-color:var(--red);color:var(--red);background:var(--pink)}
+.primary,.full{background:var(--red);color:white;border-color:var(--red);font-weight:700}
+.full{width:100%;padding:16px;margin-top:10px;font-size:16px}
+.cart-actions button{width:100%;margin-top:12px;padding:14px;color:var(--red);border-color:var(--red);background:#fff6f7;font-weight:700}
+.recent-orders{margin-top:16px;border:1px solid var(--border);border-radius:15px;padding:15px 18px;background:white}
+.recent-heading{display:flex;align-items:center;justify-content:space-between}
+.recent-heading h3{margin:0;font-size:17px;border-left:3px solid var(--red);padding-left:10px}
+.recent-heading button{border:0;color:var(--red);font-size:12px}
+.badge{display:inline-block;border-radius:20px;background:var(--red);color:white;padding:4px 8px;font-size:12px;margin-left:5px}
+.recent-orders .line{display:grid;grid-template-columns:72px minmax(90px,1fr) 110px 88px 65px;gap:8px;font-size:12px}
+.order-brand{padding:6px;border-radius:8px;background:#eaf7ef;color:#118141;text-align:center;font-size:11px}
+.order-badge{padding:5px;border-radius:20px;background:#f4f4f6;color:#65656e;font-size:11px;text-align:center}
+.recent-orders .line strong{text-align:right}
+.recent-orders>small{display:block;margin-top:9px;font-size:11px}
+#login{max-width:650px;margin:45px auto}
+#login input{margin:4px 0;max-width:100%}
+#status{font-size:12px;overflow-wrap:anywhere}
+#menuForm{display:flex;gap:8px;flex-wrap:wrap}
+#menuForm input{min-width:0;max-width:100%}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
+.summary strong{display:block;color:var(--red);font-size:26px;margin-top:6px}
+.integration-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.tag{color:#88651c;background:#fff4d6;border-radius:20px;padding:5px 10px;font-size:12px}
 
-:root{--red:#b20d22;--gold:#f6c349;--line:#efded6}body{background:#faf7f2}header{background:linear-gradient(110deg,#9e091c,#c4162c);box-shadow:0 5px 20px #5b10221a}main{max-width:1480px}.card{border-radius:18px;padding:24px;box-shadow:0 7px 22px #56200d0b}.grid{grid-template-columns:minmax(0,1.8fr) minmax(320px,.9fr);align-items:start}.tile{border-radius:13px;min-height:125px;padding:15px;border:1px solid #efded6;box-shadow:0 3px 12px #00000009;transition:.16s}.tile:hover{transform:translateY(-2px);box-shadow:0 9px 20px #00000012}.tile strong,.tile small,.tile span{display:block}.tile small{color:#7d7773;margin:5px 0}.tile span{font-size:19px;font-weight:800}.tiles{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}nav button{padding:13px 17px;border-radius:11px;font-weight:700}button.primary:hover,button.selected:hover{background:#920b1c;color:#fff}input:focus,select:focus{outline:2px solid #f4c349;outline-offset:1px}.filterbar{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}.filterbar input{flex:1;min-width:180px}.catbar{display:flex;gap:7px;overflow:auto;padding:5px 0 14px}.catbar button{white-space:nowrap;border-radius:30px;padding:8px 14px}.catbar .active{background:#b20d22;color:#fff}.paychoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.paychoices button{padding:12px 6px;border-radius:11px}.paychoices .active{border:2px solid #b20d22;background:#fff0ed;color:#9d071d;font-weight:700}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.summary .card{margin:0}.summary strong{font-size:26px;color:#b20d22;display:block}.full{width:100%;padding:15px;font-weight:750}.muted-note{font-size:13px;color:#746a66}.integration-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.integration-grid .card{margin:0}.tag{display:inline-block;background:#fff0d1;border-radius:20px;padding:5px 10px;font-size:12px;color:#835013}@media(max-width:800px){.grid{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}}@media(max-width:520px){.summary{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:15px}.tile{padding:11px}}
+@media(max-width:1450px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:1180px){.side{width:190px;padding:15px 10px}
+.grid{grid-template-columns:minmax(0,1fr) 330px}
+.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.profile{display:none}
+.channel-tabs button{gap:6px;font-size:13px}
+}
+@media(max-width:950px){.grid{grid-template-columns:1fr}
+.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.cart-card{position:static;max-height:none}
+.recent-orders .line{grid-template-columns:65px 1fr 90px 80px 60px}
+}
+@media(max-width:760px){header{padding:10px 15px;gap:12px}
+h1{font-size:21px}
+header small{font-size:12px}
+.top-status{display:none}
+.workspace{display:block}
+.side{width:100%;flex-direction:row;overflow:auto;padding:8px;gap:4px}
+.side button{white-space:nowrap;flex-shrink:0;font-size:13px;padding:9px}
+.side-bottom{display:none}
+.content{padding:14px 12px}
+.sale-title{gap:10px}
+.sale-title h2{font-size:21px}
+.sale-title input{width:48%;min-width:0}
+.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.account-row{margin-top:0}
+.recent-orders{padding:12px}
+.recent-orders .line{grid-template-columns:64px 1fr 75px}
+.order-time,.order-badge{display:none}
+}
+@media(max-width:480px){header img{width:54px;height:54px}
+h1{font-size:19px}
+header{height:78px}
+.sale-title{align-items:stretch;flex-direction:column}
+.sale-title input{width:100%}
+.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.channel-tabs button{flex-direction:column;gap:4px;padding:10px 3px;font-size:12px}
+.channel-tabs small{font-size:10px}
+.channel-icon{font-size:21px}
+.summary{grid-template-columns:1fr}
+.cart-card{padding:15px}
+.recent-heading h3{font-size:14px}
+.tile-art{height:110px}
+}
 
-/* Jeerapan reference dashboard */body{background:#f8f9fb;color:#26232a}header{height:88px;padding:12px 28px;background:linear-gradient(100deg,#a9001c,#bc0926);position:relative;z-index:2}header img{width:66px;height:66px}header h1{font-size:25px;letter-spacing:-.4px}header small{font-size:13px}.top-status{margin-left:auto;display:flex;gap:12px;align-items:center}.top-pill{border:1px solid #ffffff45;padding:9px 17px;border-radius:20px;color:#fff;font-size:13px}.top-pill b{color:#2ed16d}.workspace{display:flex;min-height:calc(100vh - 88px)}.side{width:235px;flex-shrink:0;background:#fff;border-right:1px solid #e9e9ec;padding:22px 16px;display:flex;flex-direction:column;gap:8px}.side button{border:0;text-align:left;width:100%;padding:15px 14px;border-radius:12px;font-weight:650;color:#4d4b54;background:transparent}.side button.selected{background:#fde8ea;color:#b50923}.side .side-bottom{margin-top:auto;border:1px solid #f0e6e1;border-radius:14px;padding:16px;background:#fffaf7;font-size:13px}.content{min-width:0;flex:1;padding:22px 20px;max-width:none;margin:0}.content .notice{margin-bottom:14px;font-size:13px}.content .row{align-items:center}.content .grid{grid-template-columns:minmax(0,1fr) 360px;gap:20px}.content .card{border:1px solid #ebeaed;border-radius:16px;box-shadow:0 6px 25px #22222207;margin:0;padding:18px}.content h2{font-size:22px;margin:0 0 12px}.sale-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:15px}.sale-title input{min-width:230px;width:min(390px,45vw);background:#fafafa}.channel-tabs{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #e7e7ea;border-radius:13px;overflow:hidden;margin-bottom:16px;background:white}.channel-tabs button{border:0;border-right:1px solid #e7e7ea;border-radius:0;padding:14px 6px;font-weight:700;font-size:14px}.channel-tabs button:last-child{border-right:0}.channel-tabs button.active{background:#ba0927;color:white}.channel-tabs button small{display:block;font-size:11px;font-weight:400;margin-top:3px}.content .catbar{background:white;border:1px solid #eee;border-radius:13px;padding:8px;gap:6px;margin-bottom:16px}.content .catbar button{font-size:13px;border:0;background:transparent;border-radius:9px}.content .catbar button.active{background:#fff0f1;color:#b00924;font-weight:800}.content .tiles{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}.content .tile{padding:0;min-height:185px;overflow:hidden;border:1px solid #eee;border-radius:13px;display:flex;flex-direction:column;text-align:left}.content .tile:hover{border-color:#c50e2c}.tile-art{height:112px;display:grid;place-items:center;font-size:51px;background:linear-gradient(135deg,#fff3e6,#f7e9db)}.tile-info{padding:9px 12px;flex:1}.content .tile strong{font-size:13px}.content .tile small{font-size:11px;min-height:14px}.tile-footer{display:flex;justify-content:space-between;align-items:center;margin-top:5px}.tile-footer span{color:#b80928;font-weight:850;font-size:17px}.tile-plus{width:29px;height:29px;border-radius:50%;background:#ba0827;color:white;display:grid;place-items:center;font-size:22px}.cart-card{position:sticky;top:14px;max-height:calc(100vh - 116px);overflow:auto}.cart-card h2{font-size:19px}.cart-card .line{align-items:center}.cart-card .line button{padding:5px 10px}.cart-card .paychoices button{font-size:13px}.cart-card .full{background:#ba0827}.cart-card #cart{max-height:270px;overflow:auto}.cart-card #net{color:#b80928;font-size:23px}.content #sale>.grid>.card:first-child{border:0;background:transparent;padding:0;box-shadow:none}.content #sale>.grid>.card:first-child h2{display:none}.content #sale .filterbar{display:none}.content #sale>.grid{align-items:start}.recent-orders{margin-top:18px;background:#fff;border:1px solid #eaeaea;border-radius:15px;padding:16px}.recent-orders h3{margin:0 0 10px}.recent-orders .line{font-size:13px}.account-row{display:flex;align-items:center;gap:12px;margin:0 0 15px}.account-row #who{font-size:13px;color:#666}.account-row #logout{font-size:12px;padding:7px 11px}.cart-meta{margin:12px 0;width:100%;border:1px solid #e7e4e4;border-radius:9px;padding:11px}.content .summary{margin-bottom:15px}@media(max-width:1120px){.side{width:185px}.content .grid{grid-template-columns:minmax(0,1fr) 320px}.content .tiles{grid-template-columns:repeat(auto-fill,minmax(135px,1fr))}}@media(max-width:850px){.workspace{display:block}.side{width:100%;flex-direction:row;overflow:auto;padding:8px;gap:4px}.side button{width:auto;white-space:nowrap;padding:10px}.side .side-bottom{display:none}.content{padding:12px}.content .grid{grid-template-columns:1fr}.cart-card{position:static;max-height:none}.top-status{display:none}}@media(max-width:520px){header{height:74px;padding:9px 12px}header img{width:48px;height:48px}header h1{font-size:18px}.content .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.sale-title{flex-direction:column;align-items:stretch}.sale-title input{width:100%}.channel-tabs button{font-size:12px}.channel-tabs button small{font-size:10px}}
-
-/* Screenshot-aligned refinements */
-body{font-family:Arial,"Noto Sans Thai",system-ui,sans-serif;background:#f9fafb;color:#25242a}
-header{height:87px;padding:12px 29px;background:linear-gradient(110deg,#ae001e,#b30b25 72%,#a40820);box-shadow:none}
-header img{width:68px;height:68px;padding:3px}header h1{font-size:26px;font-weight:800}header small{font-size:14px}.top-status{gap:18px}.top-pill{border-radius:15px;padding:11px 17px}.workspace{min-height:calc(100vh - 87px)}.side{width:233px;padding:22px 17px 16px}.side button{font-size:15px;min-height:47px}.side .side-bottom{background:linear-gradient(160deg,#fff,#fff7f0);padding:19px;margin-bottom:6px}.content{padding:15px 18px 25px}.content .notice{font-size:11px;background:#fff6e0;padding:8px 12px;margin:0 0 10px}.account-row{margin:0 0 8px}.content .grid{grid-template-columns:minmax(0,1fr) 370px;gap:19px}.sale-title{margin:0 0 16px}.sale-title h2{font-size:22px;margin:0 0 2px}.sale-title small{font-size:12px}.sale-title input{border:1px solid #e2e4e8;border-radius:12px;background:#f9fafb;height:44px}.channel-tabs{margin:0 0 15px;height:65px}.channel-tabs button{font-size:15px;line-height:1.2}.channel-tabs button small{font-size:11px}.content .catbar{height:85px;align-items:center;justify-content:space-between;padding:8px 12px;margin:0 0 15px;overflow:auto}.content .catbar button{min-width:78px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;padding:8px 5px;font-size:11px}.category-icon{font-size:22px;display:grid;place-items:center;width:39px;height:39px;border-radius:11px;background:#f8f3ef}.content .catbar button.active .category-icon{background:#b70825;color:white}.content .tiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.content .tile{min-height:168px;background:#fff}.tile-art{height:98px;background:#f5f1ed;overflow:hidden;position:relative}.tile-art img{width:100%;height:100%;object-fit:cover;display:block}.tile-info{padding:7px 10px}.tile-info strong{font-size:12px;line-height:1.2}.tile-info small{font-size:10px;margin:3px 0}.tile-footer{margin-top:4px}.tile-footer span{font-size:16px}.tile-plus{height:27px;width:27px;font-size:21px}.cart-card{padding:20px!important;border-radius:15px!important}.cart-card h2{font-size:19px;margin-bottom:17px}.cart-card #cart .line{gap:8px;padding:10px 0;min-height:62px}.cart-card #cart .line>span:first-child{flex:1;font-size:13px;font-weight:700}.cart-card #cart .line>span:nth-child(2){display:flex;gap:4px;align-items:center}.cart-card #cart .line button{padding:4px 9px;border-radius:7px}.cart-card #cart .cart-amount{font-weight:750;color:#b70825;font-size:13px;white-space:nowrap}.cart-card #cart .cart-art{width:47px;height:47px;border-radius:9px;object-fit:cover;background:#fff0e8}.cart-card .paychoices{gap:8px}.cart-card .paychoices button{border-radius:10px;padding:13px 5px}.cart-card .line{padding:12px 0}.cart-card #net{font-size:24px}.cart-card .full{border-radius:10px}.recent-orders{margin-top:16px}.recent-orders .line{padding:12px 4px}.content .tile:focus-visible,.side button:focus-visible{outline:3px solid #ffcf54;outline-offset:2px}.cart-note{font-size:11px;color:#777}.channel-select-label{font-size:12px;color:#67616a}.cart-actions{display:flex;gap:8px;margin-top:9px}.cart-actions button{flex:1;border-radius:10px;padding:12px 8px;font-size:13px}.cart-actions .delivery-action{border:1px solid #c6092a;color:#b10824;background:#fff}.account-row{justify-content:flex-end}.account-row #who{font-size:12px}.side .side-bottom .scooter{font-size:46px;text-align:center;display:block;margin:6px}.side .side-bottom p{font-size:12px;line-height:1.6}.side .side-bottom button{background:#ffe1e3;color:#a70621;text-align:center;min-height:40px;font-size:12px}.channel-select-row{display:flex;align-items:center;gap:10px;margin:0 0 10px}.channel-select-row select{font-size:12px;padding:6px 8px}.recent-orders .order-badge{font-size:10px;border-radius:20px;padding:5px 9px;background:#e9f8ee;color:#168041}.recent-orders .order-brand{font-size:11px;border-radius:6px;padding:5px 7px;background:#13ad56;color:white;font-weight:700}.recent-orders .line{display:grid;grid-template-columns:55px 1fr 100px 70px;align-items:center}.recent-orders .line>span{font-size:12px}.recent-orders .line strong{text-align:right}.content #sale .grid>.card:first-child{min-width:0}@media(max-width:1450px){.content .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:1180px){.content .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.content .grid{grid-template-columns:minmax(0,1fr) 340px}}@media(max-width:900px){.content .grid{grid-template-columns:1fr}.content .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}.cart-card{position:static;max-height:none}}@media(max-width:650px){.content .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.content .catbar{justify-content:flex-start}.content .catbar button{min-width:72px}.recent-orders .line{grid-template-columns:45px 1fr 60px}.recent-orders .order-badge{display:none}}</style><header><img src="/pos/jeerapan-logo.svg" alt=""><div><h1>Jeerapan POS · Cloud</h1><small>Supabase · ระบบฐานข้อมูลกลาง</small></div><div class="top-status"><span class="top-pill"><b>●</b> ออนไลน์</span><span class="top-pill">▣ สาขาหลัก</span><span class="top-pill">Jeerapan POS</span></div></header><div class="workspace"><aside class="side" id="sidebar"><button class="selected" data-side="sale">🛒　ขายสินค้า</button><button data-side="menu">♜　จัดการเมนู</button><button data-side="integrations">🚚　ออเดอร์เดลิเวอรี่</button><button data-side="report">▥　รายงานยอดขาย</button><button data-side="integrations">💳　การชำระเงิน</button><div class="side-bottom"><span class="scooter">🛵</span><b>เดลิเวอรี่พร้อมใช้งานแบบบันทึกมือ</b><p>เชื่อมต่อ API Grab, LINE MAN และแพลตฟอร์มอื่นได้เมื่อได้รับสิทธิ์จากผู้ให้บริการ</p><button type="button" data-side="integrations">ตั้งค่าเดลิเวอรี่ →</button></div></aside><main class="content"><div class="notice">รุ่นทดสอบ: บันทึกลงฐานข้อมูลจริง โปรดใช้บิลทดสอบก่อนเปิดใช้งานหน้าร้าน และยังไม่เชื่อมระบบรับชำระเงินหรือเดลิเวอรี่โดยตรง</div>
-<section id="login" class="card"><h2>เข้าสู่ระบบ</h2><form id="loginForm"><input id="email" type="email" placeholder="อีเมล" autocomplete="email" required><input id="password" type="password" placeholder="รหัสผ่าน" autocomplete="current-password" required><button class="primary">เข้าสู่ระบบ</button></form><p><button id="forgotBtn" type="button">ลืมรหัสผ่าน? รับ OTP ทางอีเมล</button></p><div id="resetBox" class="hidden"><h3>ตั้งรหัสผ่านใหม่ด้วย OTP</h3><p class="muted">ส่งรหัส OTP ไปยังอีเมลบัญชีพนักงานที่ลงทะเบียนไว้เท่านั้น</p><form id="otpSendForm"><input id="resetEmail" type="email" placeholder="อีเมลบัญชี Jeerapan POS" required><button class="primary" id="sendOtpBtn">ส่ง OTP</button></form><form id="otpVerifyForm" class="hidden"><p>ตรวจสอบอีเมล (รวมถึงจดหมายขยะ) แล้วกรอกรหัส 6 หลัก</p><input id="otpCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="รหัส OTP" required><input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)" required><button class="primary" id="confirmOtpBtn">ยืนยัน OTP และเปลี่ยนรหัสผ่าน</button><button type="button" id="resendOtpBtn">ส่ง OTP อีกครั้ง</button></form><p class="muted">หากได้รับอีเมลเป็นลิงก์แทนตัวเลข ต้องปรับเทมเพลตอีเมลใน Supabase ให้แสดงรหัส OTP</p></div></section>
-<div id="app" class="hidden"><div class="row"><span id="who"></span><button id="logout">ออกจากระบบ</button></div><nav class="hidden"><button class="selected" data-tab="sale">ขายสินค้า</button><button data-tab="menu">จัดการเมนู</button><button data-tab="report">📊 รายงานยอดขาย</button><button data-tab="integrations">🔌 การเชื่อมต่อ</button></nav>
-<section id="sale"><div class="sale-title"><div><h2>🛒 ขายสินค้า</h2><small class="muted">เลือกเมนูและช่องทางการขาย</small></div><input id="menuSearchTop" type="search" placeholder="⌕ ค้นหาเมนู (เช่น ข้าว ไก่ย่าง ซุป)"></div><div class="channel-tabs" id="channelTabs"><button data-channel="dine" class="active">▣ ที่ร้าน<small>Walk-in</small></button><button data-channel="grab">🚚 เดลิเวอรี่<small>Grab · LINE MAN</small></button><button data-channel="take">◷ สั่งล่วงหน้า<small>Pickup</small></button><button data-channel="tour">▤ กรุ๊ปทัวร์<small>จัดการบิล</small></button></div><div class="grid"><div class="card"><h2>🍽️ รายการอาหาร</h2><div class="filterbar"><select id="channel"><option value="dine">ทานที่ร้าน</option><option value="take">กลับบ้าน</option><option value="grab">GrabFood</option><option value="lineman">LINE MAN</option><option value="shopee">ShopeeFood</option><option value="robinhood">Robinhood</option><option value="tour">กรุ๊ปทัวร์</option></select><input id="searchMenu" type="search" placeholder="🔎 ค้นหาชื่อเมนู..." aria-label="ค้นหาเมนู"></div><div id="catbar" class="catbar"></div><div id="products" class="tiles"></div></div><div class="card cart-card"><h2>รายการสั่งซื้อ</h2><div id="cart"></div><input id="cartNote" class="cart-meta" placeholder="หมายเหตุรายการ เช่น ไม่ใส่พริก / เพิ่มพิเศษ" aria-label="หมายเหตุรายการ"><div class="line"><strong>รวม</strong><strong id="sum">฿0</strong></div><label>ส่วนลดบาท <input id="discount" type="number" value="0" min="0" step=".01" style="width:100px"></label><h3>วิธีชำระเงิน</h3><div id="paychoices" class="paychoices"></div><select id="payment" class="hidden"><option value="cash">เงินสด</option><option value="qr">QR Code</option><option value="bank">โอนธนาคาร</option><option value="promptpay">พร้อมเพย์</option><option value="card">บัตรเครดิต</option><option value="government">คนละครึ่ง</option></select><p class="muted-note" id="paymentNotice">บันทึกวิธีรับชำระเท่านั้น ยังไม่ตัดเงินจริง กรุณาตรวจสอบยอดกับธนาคารหรือเครื่องรับบัตร</p><div class="line"><strong>สุทธิ</strong><strong id="net">฿0</strong></div><button class="primary full" id="checkout">สรุปการขายและบันทึกบิล →</button><div class="cart-actions"><button class="delivery-action" type="button" id="deliverySave">🚚 บันทึกเป็นออเดอร์เดลิเวอรี่</button></div></div></div><div class="recent-orders"><h3>ออเดอร์เดลิเวอรี่ล่าสุด <span style="color:#bb0827">●</span></h3><div id="recentOrders"></div><small class="muted">ออเดอร์เดลิเวอรี่แสดงเฉพาะรายการที่พนักงานบันทึก ไม่ใช่ข้อมูลสดจากแพลตฟอร์ม</small></div></section>
-<section id="menu" class="hidden"><div class="card"><h2>จัดการเมนู</h2><form id="menuForm"><input type="hidden" id="menuId"><input id="menuName" placeholder="ชื่อเมนู" required><input id="menuCategory" placeholder="หมวดหมู่" required><input id="menuSize" placeholder="ขนาด"><input id="menuPrice" type="number" step=".01" min="0" placeholder="ราคา" required><button class="primary">บันทึกเมนู</button><button type="button" id="resetMenu">เพิ่มเมนูใหม่</button></form><div id="menuList"></div></div></section>
-<section id="report" class="hidden"><div class="summary"><div class="card">ยอดขายล่าสุด<strong id="salesBig">฿0</strong></div><div class="card">จำนวนบิล<strong id="countBig">0</strong></div><div class="card">ยอดเฉลี่ยต่อบิล<strong id="avgBig">฿0</strong></div></div><div class="card"><h2>รายงานจาก Supabase</h2><button id="refresh">รีเฟรชข้อมูล</button><button id="csv">ส่งออก CSV</button><div class="line"><span>ยอดขายรวม (1,000 บิลล่าสุด)</span><strong id="sales">฿0</strong></div><div class="line"><span>จำนวนบิล</span><strong id="count">0</strong></div><div id="history"></div></div></section><section id="integrations" class="hidden"><div class="card"><h2>🔌 ระบบชำระเงินและเดลิเวอรี่</h2><p class="muted">ระบบ POS รองรับการบันทึกวิธีชำระและแยกช่องทางขาย แต่การรับชำระเงินอัตโนมัติและการรับออเดอร์จาก API ต้องได้รับสิทธิ์เชื่อมต่อจากผู้ให้บริการก่อน</p><div class="integration-grid"><div class="card"><h3>💳 QR / PromptPay / บัตร</h3><span class="tag">รอตั้งค่าผู้ให้บริการ</span><p>บันทึกยอดที่ชำระภายนอกได้แล้ว · ยังไม่สร้าง QR ชำระเงินจริง ไม่ตรวจสอบยอดโอนอัตโนมัติ</p></div><div class="card"><h3>🛵 GrabFood</h3><span class="tag">บันทึกออเดอร์ด้วยมือ</span><p>เลือก GrabFood ในหน้าขายได้ · รอ API และสิทธิ์ร้านค้า</p></div><div class="card"><h3>🛵 LINE MAN</h3><span class="tag">บันทึกออเดอร์ด้วยมือ</span><p>เลือก LINE MAN ในหน้าขายได้ · รอ API และสิทธิ์ร้านค้า</p></div><div class="card"><h3>🛵 ShopeeFood / Robinhood</h3><span class="tag">บันทึกออเดอร์ด้วยมือ</span><p>เลือกช่องทางในหน้าขายได้ · รอการอนุมัติการเชื่อมต่อ</p></div></div><p class="notice">ห้ามนำรหัส API ลับหรือข้อมูลบัตรลูกค้ามาใส่ในหน้าเว็บโดยตรง ต้องใช้เซิร์ฟเวอร์ที่ปลอดภัยและ webhook ที่ตรวจสอบลายเซ็นก่อนเปิดรับชำระเงินจริง</p></div></section></div><p id="status" role="status"></p></main>
+.header-logout{background:#ffffff18;border-color:#ffffff40;color:white;font-size:11px;padding:7px 9px}.notice{padding:5px 9px;margin-bottom:8px;font-size:10px}.profile{max-width:190px}.sale-title input{width:min(40vw,360px)}.sale-title{gap:12px}.sale-title h2{display:flex;align-items:center;gap:8px}.sale-title h2 svg{color:var(--red);width:29px;height:29px}.tile small{display:none}.tile-info{padding:6px 11px}.tile-art{height:96px}.tile-footer{margin-top:1px}.top-pill svg{width:17px;height:17px;vertical-align:middle;margin-right:6px}.paychoices button{display:flex;gap:8px;align-items:center}.paychoices svg{flex-shrink:0}.nav-icon,.channel-icon{display:inline-flex;align-items:center;justify-content:center}.channel-icon svg{width:27px;height:27px}.line{padding:9px 0}#cart .line{min-height:76px}.cart-meta{margin-bottom:4px}.cart-card .muted-note{font-size:11px}.cart-card .full{margin-top:4px}@media(max-width:760px){.header-logout{margin-left:auto}.notice{font-size:10px}header small{font-size:10px}}@media(min-width:1460px){.sale-title input{width:360px}}
+@media(max-width:480px){.sale-title input{width:100%}}
+</style>
+<header>
+<img src="/pos/jeerapan-logo.svg" alt="">
+<div>
+<h1>Jeerapan POS · Cloud</h1>
+<small>ระบบจัดการร้านอาหาร ครบจบในที่เดียว</small>
+</div>
+<div class="top-status">
+<span class="top-pill" id="connectionState">
+<b>●</b> <span>รอเชื่อมต่อ</span>
+</span>
+<span class="top-pill">
+<span data-icon="store" aria-hidden="true">
+</span> Jeerapan POS</span>
+<div class="profile">
+<span class="avatar" id="avatar">J</span>
+<span id="profileName">กรุณาเข้าสู่ระบบ</span>
+</div>
+</div>
+<button id="logout" class="header-logout hidden">ออกจากระบบ</button>
+</header>
+<div class="workspace">
+<aside class="side" id="sidebar" aria-label="เมนูหลัก">
+<button class="selected" data-side="sale">
+<span class="nav-icon" data-icon="cart" aria-hidden="true">
+</span>ขายสินค้า</button>
+<button data-side="menu">
+<span class="nav-icon" data-icon="menu" aria-hidden="true">
+</span>จัดการเมนู</button>
+<button data-side="integrations">
+<span class="nav-icon" data-icon="truck" aria-hidden="true">
+</span>ออเดอร์เดลิเวอรี่</button>
+<button data-side="report">
+<span class="nav-icon" data-icon="chart" aria-hidden="true">
+</span>รายงานยอดขาย</button>
+<button data-side="integrations">
+<span class="nav-icon" data-icon="card" aria-hidden="true">
+</span>การชำระเงิน</button>
+<div class="side-bottom">
+<span class="scooter" aria-hidden="true">🛵</span>
+<b>เดลิเวอรี่แบบบันทึกมือ</b>
+<p>บันทึก Grab, LINE MAN และแพลตฟอร์มอื่น<br>ยังไม่เชื่อม API โดยตรง</p>
+<button type="button" data-side="integrations">ตั้งค่าเดลิเวอรี่ →</button>
+</div>
+</aside>
+<main class="content">
+<div class="notice">รุ่นทดสอบ: บันทึกลงฐานข้อมูลจริง โปรดใช้บิลทดสอบก่อนเปิดใช้งานหน้าร้าน และยังไม่เชื่อมระบบรับชำระเงินหรือเดลิเวอรี่โดยตรง</div>
+<section id="login" class="card">
+<h2>เข้าสู่ระบบ</h2>
+<form id="loginForm">
+<input id="email" type="email" placeholder="อีเมล" autocomplete="email" required>
+<input id="password" type="password" placeholder="รหัสผ่าน" autocomplete="current-password" required>
+<button class="primary">เข้าสู่ระบบ</button>
+</form>
+<p>
+<button id="forgotBtn" type="button">ลืมรหัสผ่าน? รับ OTP ทางอีเมล</button>
+</p>
+<div id="resetBox" class="hidden">
+<h3>ตั้งรหัสผ่านใหม่ด้วย OTP</h3>
+<p class="muted">ส่งรหัส OTP ไปยังอีเมลบัญชีพนักงานที่ลงทะเบียนไว้เท่านั้น</p>
+<form id="otpSendForm">
+<input id="resetEmail" type="email" placeholder="อีเมลบัญชี Jeerapan POS" required>
+<button class="primary" id="sendOtpBtn">ส่ง OTP</button>
+</form>
+<form id="otpVerifyForm" class="hidden">
+<p>ตรวจสอบอีเมล (รวมถึงจดหมายขยะ) แล้วกรอกรหัส 6 หลัก</p>
+<input id="otpCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="รหัส OTP" required>
+<input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)" required>
+<button class="primary" id="confirmOtpBtn">ยืนยัน OTP และเปลี่ยนรหัสผ่าน</button>
+<button type="button" id="resendOtpBtn">ส่ง OTP อีกครั้ง</button>
+</form>
+<p class="muted">หากได้รับอีเมลเป็นลิงก์แทนตัวเลข ต้องปรับเทมเพลตอีเมลใน Supabase ให้แสดงรหัส OTP</p>
+</div>
+</section>
+<div id="app" class="hidden">
+<span id="who" class="hidden">
+</span>
+<nav class="hidden">
+<button class="selected" data-tab="sale">ขายสินค้า</button>
+<button data-tab="menu">จัดการเมนู</button>
+<button data-tab="report">📊 รายงานยอดขาย</button>
+<button data-tab="integrations">🔌 การเชื่อมต่อ</button>
+</nav>
+<section id="sale">
+<div class="grid">
+<div class="card">
+<h2>🍽️ รายการอาหาร</h2>
+<div class="sale-title">
+<div>
+<h2>
+<span data-icon="cart" aria-hidden="true">
+</span> ขายสินค้า</h2>
+<small class="muted">เลือกเมนูและช่องทางการขาย</small>
+</div>
+<input id="menuSearchTop" type="search" placeholder="⌕ ค้นหาเมนู (เช่น ข้าว กาแฟ ขนม)" aria-label="ค้นหาเมนู">
+</div>
+<div class="channel-tabs" id="channelTabs" aria-label="ช่องทางการขาย">
+<button data-channel="dine" class="active" aria-pressed="true">
+<span class="channel-icon" data-icon="store" aria-hidden="true">
+</span>
+<span>ที่ร้าน<small>Walk-in</small>
+</span>
+</button>
+<button data-channel="grab" class="" aria-pressed="false">
+<span class="channel-icon" data-icon="truck" aria-hidden="true">
+</span>
+<span>เดลิเวอรี่<small>Grab · LINE MAN</small>
+</span>
+</button>
+<button data-channel="take" class="" aria-pressed="false">
+<span class="channel-icon" data-icon="clock" aria-hidden="true">
+</span>
+<span>สั่งล่วงหน้า<small>Pickup</small>
+</span>
+</button>
+<button data-channel="tour" class="" aria-pressed="false">
+<span class="channel-icon" data-icon="group" aria-hidden="true">
+</span>
+<span>กรุ๊ปทัวร์<small>จัดการบิล</small>
+</span>
+</button>
+</div>
+<div class="channel-select-row hidden" id="deliveryChannelRow">
+<label for="channel">แพลตฟอร์ม</label>
+<select id="channel">
+<option value="dine">ทานที่ร้าน</option>
+<option value="take">กลับบ้าน</option>
+<option value="grab">GrabFood</option>
+<option value="lineman">LINE MAN</option>
+<option value="shopee">ShopeeFood</option>
+<option value="robinhood">Robinhood</option>
+<option value="tour">กรุ๊ปทัวร์</option>
+</select>
+<input id="searchMenu" type="search" class="hidden" aria-label="ค้นหาเมนู">
+</div>
+<div id="catbar" class="catbar">
+</div>
+<div id="products" class="tiles">
+</div>
+<div class="recent-orders">
+<div class="recent-heading">
+<h3>ออเดอร์เดลิเวอรี่ล่าสุด <span class="badge" id="deliveryCount">0</span>
+</h3>
+<button type="button" id="viewDelivery">ดูรายงาน →</button>
+</div>
+<div id="recentOrders">
+</div>
+<small class="muted">เฉพาะบิลที่บันทึกมือจาก 1,000 บิลล่าสุด · ไม่ใช่สถานะจัดส่งจากแพลตฟอร์ม · ภาพอาหารเป็นภาพประกอบเมื่อไม่มีรูปเมนู</small>
+</div>
+</div>
+<div class="card cart-card">
+<div class="cart-heading">
+<h2>รายการสั่งซื้อ</h2>
+<button id="clearCart" type="button">ล้างรายการ</button>
+</div>
+<div id="cart">
+</div>
+<label class="note-label" for="cartNote">หมายเหตุรายการ (ยังไม่บันทึกลงบิล)</label>
+<textarea id="cartNote" class="cart-meta" rows="2" placeholder="เช่น ไม่ใส่พริก / ลดหวาน / เพิ่มพิเศษ…">
+</textarea>
+<div class="line">
+<span>รวมรายการ (<span id="cartCount">0</span>)</span>
+<strong id="sum">฿0</strong>
+</div>
+<label>ส่วนลดบาท <input id="discount" type="number" value="0" min="0" step=".01" style="width:100px">
+</label>
+<div class="line net-line">
+<strong>ยอดรวม</strong>
+<strong id="net">฿0</strong>
+</div>
+<h3 class="payment-title">วิธีการชำระเงิน</h3>
+<div id="paychoices" class="paychoices">
+</div>
+<select id="payment" class="hidden">
+<option value="cash">เงินสด</option>
+<option value="qr">QR Code</option>
+<option value="bank">โอนธนาคาร</option>
+<option value="promptpay">พร้อมเพย์</option>
+<option value="card">บัตรเครดิต</option>
+<option value="government">คนละครึ่ง</option>
+</select>
+<p class="muted-note" id="paymentNotice">บันทึกวิธีรับชำระเท่านั้น ยังไม่ตัดเงินจริง กรุณาตรวจสอบยอดกับธนาคารหรือเครื่องรับบัตร</p>
+<button class="primary full" id="checkout">สรุปการขายและบันทึกบิล →</button>
+<div class="cart-actions">
+<button class="delivery-action" type="button" id="deliverySave">🚚 บันทึกเป็นออเดอร์เดลิเวอรี่</button>
+</div>
+</div>
+</div>
+</section>
+<section id="menu" class="hidden">
+<div class="card">
+<h2>จัดการเมนู</h2>
+<form id="menuForm">
+<input type="hidden" id="menuId">
+<input id="menuName" placeholder="ชื่อเมนู" required>
+<input id="menuCategory" placeholder="หมวดหมู่" required>
+<input id="menuSize" placeholder="ขนาด">
+<input id="menuPrice" type="number" step=".01" min="0" placeholder="ราคา" required>
+<button class="primary">บันทึกเมนู</button>
+<button type="button" id="resetMenu">เพิ่มเมนูใหม่</button>
+</form>
+<div id="menuList">
+</div>
+</div>
+</section>
+<section id="report" class="hidden">
+<div class="summary">
+<div class="card">ยอดขายล่าสุด<strong id="salesBig">฿0</strong>
+</div>
+<div class="card">จำนวนบิล<strong id="countBig">0</strong>
+</div>
+<div class="card">ยอดเฉลี่ยต่อบิล<strong id="avgBig">฿0</strong>
+</div>
+</div>
+<div class="card">
+<h2>รายงานจาก Supabase</h2>
+<button id="refresh">รีเฟรชข้อมูล</button>
+<button id="csv">ส่งออก CSV</button>
+<div class="line">
+<span>ยอดขายรวม (1,000 บิลล่าสุด)</span>
+<strong id="sales">฿0</strong>
+</div>
+<div class="line">
+<span>จำนวนบิล</span>
+<strong id="count">0</strong>
+</div>
+<div id="history">
+</div>
+</div>
+</section>
+<section id="integrations" class="hidden">
+<div class="card">
+<h2>🔌 ระบบชำระเงินและเดลิเวอรี่</h2>
+<p class="muted">ระบบ POS รองรับการบันทึกวิธีชำระและแยกช่องทางขาย แต่การรับชำระเงินอัตโนมัติและการรับออเดอร์จาก API ต้องได้รับสิทธิ์เชื่อมต่อจากผู้ให้บริการก่อน</p>
+<div class="integration-grid">
+<div class="card">
+<h3>💳 QR / PromptPay / บัตร</h3>
+<span class="tag">รอตั้งค่าผู้ให้บริการ</span>
+<p>บันทึกยอดที่ชำระภายนอกได้แล้ว · ยังไม่สร้าง QR ชำระเงินจริง ไม่ตรวจสอบยอดโอนอัตโนมัติ</p>
+</div>
+<div class="card">
+<h3>🛵 GrabFood</h3>
+<span class="tag">บันทึกออเดอร์ด้วยมือ</span>
+<p>เลือก GrabFood ในหน้าขายได้ · รอ API และสิทธิ์ร้านค้า</p>
+</div>
+<div class="card">
+<h3>🛵 LINE MAN</h3>
+<span class="tag">บันทึกออเดอร์ด้วยมือ</span>
+<p>เลือก LINE MAN ในหน้าขายได้ · รอ API และสิทธิ์ร้านค้า</p>
+</div>
+<div class="card">
+<h3>🛵 ShopeeFood / Robinhood</h3>
+<span class="tag">บันทึกออเดอร์ด้วยมือ</span>
+<p>เลือกช่องทางในหน้าขายได้ · รอการอนุมัติการเชื่อมต่อ</p>
+</div>
+</div>
+<p class="notice">ห้ามนำรหัส API ลับหรือข้อมูลบัตรลูกค้ามาใส่ในหน้าเว็บโดยตรง ต้องใช้เซิร์ฟเวอร์ที่ปลอดภัยและ webhook ที่ตรวจสอบลายเซ็นก่อนเปิดรับชำระเงินจริง</p>
+</div>
+</section>
+</div>
+<p id="status" role="status">
+</p>
+</main>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
 const db=createClient('https://ihepygjpopptzlyxftph.supabase.co','sb_publishable_qLzjIihK6QbLCJLfNRKYew_m_OIyG2C');
 const el=id=>document.getElementById(id),money=n=>'฿'+Number(n||0).toLocaleString('th-TH',{maximumFractionDigits:2}),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let user=null,role='',menus=[],categories=[],orders=[],cart=[],saving=false,activeCategory='all';
 function check(r){if(r.error)throw r.error;return r.data}
-function error(e){el('status').textContent='ข้อผิดพลาด: '+(e.message||e);console.error(e)}
-async function init(u){if(!u){el('login').classList.remove('hidden');el('app').classList.add('hidden');return}try{const p=check(await db.from('pos_staff').select('role,active').eq('user_id',u.id).single());if(!p.active)throw Error('บัญชีนี้ถูกระงับ');user=u;role=p.role;el('login').classList.add('hidden');el('app').classList.remove('hidden');el('who').textContent=u.email+' ('+role+')';if(role==='cashier')document.querySelector('[data-tab="menu"]').classList.add('hidden');await refresh();el('status').textContent='เชื่อมฐานข้อมูลกลางสำเร็จ'}catch(e){error(e);el('login').classList.remove('hidden');el('app').classList.add('hidden')}}
+function error(e){connectionState(false);el('status').textContent='ข้อผิดพลาด: '+(e.message||e);console.error(e)}
+async function init(u){if(!u){el('login').classList.remove('hidden');el('app').classList.add('hidden');return}try{const p=check(await db.from('pos_staff').select('role,active').eq('user_id',u.id).single());if(!p.active)throw Error('บัญชีนี้ถูกระงับ');user=u;role=p.role;el('logout').classList.remove('hidden');el('login').classList.add('hidden');el('app').classList.remove('hidden');el('who').textContent=u.email+' ('+role+')';document.querySelectorAll('[data-tab="menu"],[data-side="menu"]').forEach(b=>b.classList.toggle('hidden',role==='cashier'));el('profileName').textContent=u.email+' · '+role;el('avatar').textContent=(u.email||'J').charAt(0).toUpperCase();await refresh();connectionState(true);el('status').textContent='เชื่อมฐานข้อมูลกลางสำเร็จ'}catch(e){error(e);el('login').classList.remove('hidden');el('app').classList.add('hidden')}}
 el('loginForm').onsubmit=async e=>{e.preventDefault();try{const r=await db.auth.signInWithPassword({email:el('email').value,password:el('password').value});check(r);el('password').value='';await init(r.data.user)}catch(e){error(e)}};
 el('forgotBtn').onclick=()=>{el('resetBox').classList.toggle('hidden');el('resetEmail').value=el('email').value.trim();el('status').textContent=''};
 async function sendOtp(){const email=el('resetEmail').value.trim();if(!email)throw Error('กรุณาระบุอีเมล');const {error:sendError}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+'/pos/cloud/'}});if(sendError)throw sendError;el('otpVerifyForm').classList.remove('hidden');el('status').textContent='ระบบร้องขออีเมลเข้าสู่ระบบแล้ว หากได้รับลิงก์ Sign in ให้เปิดลิงก์ล่าสุด จากนั้นกลับมาเปลี่ยนรหัสผ่านในหน้า POS'}
@@ -29,16 +448,30 @@ el('otpSendForm').onsubmit=async e=>{e.preventDefault();el('sendOtpBtn').disable
 el('resendOtpBtn').onclick=async()=>{el('resendOtpBtn').disabled=true;try{await sendOtp()}catch(err){error(err)}finally{el('resendOtpBtn').disabled=false}};
 el('otpVerifyForm').onsubmit=async e=>{e.preventDefault();el('confirmOtpBtn').disabled=true;try{const email=el('resetEmail').value.trim(),token=el('otpCode').value.trim(),password=el('newPassword').value;if(!/^[0-9]{6,8}$/.test(token)||password.length<8)throw Error('กรุณากรอก OTP และรหัสผ่านใหม่ให้ถูกต้อง');check(await db.auth.verifyOtp({email,token,type:'email'}));check(await db.auth.updateUser({password}));el('newPassword').value='';el('otpCode').value='';el('resetBox').classList.add('hidden');el('status').textContent='เปลี่ยนรหัสผ่านสำเร็จ';const {data:{user:verifiedUser}}=await db.auth.getUser();await init(verifiedUser)}catch(err){error(err)}finally{el('confirmOtpBtn').disabled=false}};
 el('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('selected',x===b));['sale','menu','report','integrations'].forEach(x=>el(x).classList.toggle('hidden',x!==b.dataset.tab))});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(b.dataset.tab==='menu'&&role==='cashier')return;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('selected',x===b));document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x.dataset.side===b.dataset.tab));['sale','menu','report','integrations'].forEach(x=>el(x).classList.toggle('hidden',x!==b.dataset.tab))});
 async function refresh(){categories=check(await db.from('pos_categories').select('*'));menus=check(await db.from('pos_menus').select('*').order('name'));orders=check(await db.from('pos_orders').select('*').order('sold_at',{ascending:false}).limit(1000));render()}
-function categoryIcon(name){return /ทั้งหมด/.test(name)?'▦':/จานเดียว|ข้าว/.test(name)?'🍛':/ก๋วยเตี๋ยว|ซุป/.test(name)?'🍜':/กับข้าว|แกง/.test(name)?'🍗':/เครื่องดื่ม|น้ำ/.test(name)?'🥤':/ของหวาน|ขนม/.test(name)?'🧁':/โปรโมชั่น/.test(name)?'🏷️':'⭐'}function photoFor(m){const n=m.name;const base='https://images.unsplash.com/';const id=/ข้าว|หมก/.test(n)?'photo-1512058564366-18510be2db19':/ไก่|ทอด|ย่าง/.test(n)?'photo-1562967914-608f82629710':/ส้มตำ|ยำ|สลัด/.test(n)?'photo-1512621776951-a57141f2eefd':/ก๋วยเตี๋ยว|ซุป|แกง/.test(n)?'photo-1569718212165-3a8278d5f624':/กาแฟ|ชา|นม/.test(n)?'photo-1541167760496-1628856ab772':/น้ำ|โซดา/.test(n)?'photo-1513558161293-cdaf765edfd4':/ขนม|เค้ก|โรตี|มะม่วง/.test(n)?'photo-1578985545062-69928b1d9587':'photo-1547592180-85f173990554';return base+id+'?auto=format&fit=crop&w=420&q=75'}function menuIcon(m){const n=m.name;return /ไก่ย่าง|สะเต๊ะ|เป็ด/.test(n)?'🍗':/ข้าว|หมก|บุหรี่/.test(n)?'🍛':/ซุป|ก๋วยเตี๋ยว|บะหมี่|แกง/.test(n)?'🍜':/ส้มตำ|ลาบ|ตำ|ยำ/.test(n)?'🥗':/กาแฟ|ชา|น้ำ|โซดา|โค้ก/.test(n)?'🥤':/ไอศกรีม|มะม่วง|โรตี|ขนม/.test(n)?'🍨':'🍽️'}function render(){const search=(el('searchMenu').value||'').trim().toLocaleLowerCase();el('catbar').innerHTML=[{id:'all',name:'ทั้งหมด'},...categories].map(c=>'<button data-category="'+esc(c.id)+'" class="'+(activeCategory===c.id?'active':'')+'">'+esc(c.name)+'</button>').join('');el('products').innerHTML=menus.filter(m=>m.active&&(activeCategory==='all'||m.category_id===activeCategory)&&m.name.toLocaleLowerCase().includes(search)).map(m=>'<button class="tile" data-add="'+esc(m.id)+'"><div class="tile-art">'+menuIcon(m)+'</div><div class="tile-info"><strong>'+esc(m.name)+'</strong><small>'+esc(categories.find(c=>c.id===m.category_id)?.name||'')+' '+esc(m.size||'')+'</small><div class="tile-footer"><span>'+money(m.price)+'</span><b class="tile-plus">+</b></div></div></button>').join('')||'<p>ยังไม่มีเมนู</p>';el('menuList').innerHTML=menus.map(m=>'<div class="line"><span>'+esc(m.name)+' · '+money(m.price)+'</span><button data-edit="'+esc(m.id)+'">แก้ไข</button></div>').join('');el('sales').textContent=money(orders.reduce((s,o)=>s+Number(o.total),0));el('count').textContent=orders.length;el('salesBig').textContent=money(orders.reduce((s,o)=>s+Number(o.total),0));el('countBig').textContent=orders.length;el('avgBig').textContent=money(orders.length?orders.reduce((s,o)=>s+Number(o.total),0)/orders.length:0);el('recentOrders').innerHTML=orders.filter(o=>['grab','lineman','shopee','robinhood'].includes(o.channel)).slice(0,5).map(o=>'<div class="line"><b class="order-brand">'+esc(o.channel.toUpperCase())+'</b><span>'+esc(new Date(o.sold_at).toLocaleString('th-TH'))+' · #'+esc(String(o.id).slice(0,8))+'</span><span class="order-badge">บันทึกแล้ว</span><strong>'+money(o.total)+'</strong></div>').join('')||'<p class="muted">ยังไม่มีออเดอร์</p>';el('history').innerHTML=orders.slice(0,30).map(o=>'<div class="line"><span>'+esc(new Date(o.sold_at).toLocaleString('th-TH'))+' · '+esc(o.channel)+'</span><strong>'+money(o.total)+'</strong></div>').join('');drawCart()}
-function drawCart(){const sum=cart.reduce((s,x)=>s+x.qty*Number(x.price),0),discount=Number(el('discount').value);el('cart').innerHTML=cart.map(x=>'<div class="line"><img class="cart-art" src="'+photoFor(x)+'" alt=""><span>'+esc(x.name)+'<small class="cart-note"> × '+x.qty+'</small></span><span><button data-qty="-1" data-id="'+esc(x.id)+'">−</button><button data-qty="1" data-id="'+esc(x.id)+'">+</button></span><b class="cart-amount">'+money(x.qty*x.price)+'</b></div>').join('')||'<p class="muted">ยังไม่มีรายการ</p>';el('sum').textContent=money(sum);el('net').textContent=discount>=0&&discount<=sum?money(sum-discount):'ส่วนลดไม่ถูกต้อง'}
-document.addEventListener('click',e=>{const cat=e.target.closest('[data-category]'),pay=e.target.closest('[data-payment]');if(cat){activeCategory=cat.dataset.category;render()}if(pay){el('payment').value=pay.dataset.payment;drawPayment()}const add=e.target.closest('[data-add]'),qty=e.target.closest('[data-qty]'),edit=e.target.closest('[data-edit]');if(add){const m=menus.find(x=>x.id===add.dataset.add),x=cart.find(x=>x.id===m.id);if(x)x.qty++;else cart.push({...m,qty:1});drawCart()}if(qty){const x=cart.find(x=>x.id===qty.dataset.id);if(x){x.qty+=Number(qty.dataset.qty);if(x.qty<=0)cart=cart.filter(y=>y!==x)}drawCart()}if(edit){const m=menus.find(x=>x.id===edit.dataset.edit);el('menuId').value=m.id;el('menuName').value=m.name;el('menuCategory').value=categories.find(c=>c.id===m.category_id)?.name||'';el('menuSize').value=m.size||'';el('menuPrice').value=m.price}});el('discount').oninput=drawCart;el('searchMenu').oninput=render;el('menuSearchTop').oninput=()=>{el('searchMenu').value=el('menuSearchTop').value;render()};document.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x===b));document.querySelector('[data-tab="'+b.dataset.side+'"]').click()});document.querySelectorAll('[data-channel]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-channel]').forEach(x=>x.classList.toggle('active',x===b));el('channel').value=b.dataset.channel;drawPayment()});const paymentLabels={cash:'💵 เงินสด',qr:'📱 QR Code',bank:'🏦 โอนธนาคาร',promptpay:'⚡ พร้อมเพย์',card:'💳 บัตรเครดิต',government:'🇹🇭 คนละครึ่ง'};function drawPayment(){const delivery=['grab','lineman','shopee','robinhood'].includes(el('channel').value);el('paychoices').classList.toggle('hidden',delivery);el('paymentNotice').textContent=delivery?'เดลิเวอรี่: บันทึกช่องทางแพลตฟอร์มเท่านั้น ไม่ดึงออเดอร์หรือยอดชำระอัตโนมัติ':'บันทึกวิธีรับชำระเท่านั้น ยังไม่ตัดเงินจริง กรุณาตรวจสอบยอดกับธนาคารหรือเครื่องรับบัตร';el('paychoices').innerHTML=Object.entries(paymentLabels).map(([k,v])=>'<button type="button" data-payment="'+k+'" class="'+(el('payment').value===k?'active':'')+'">'+v+'</button>').join('')}el('channel').onchange=drawPayment;drawPayment();el('deliverySave').onclick=()=>{el('channel').value='grab';document.querySelectorAll('[data-channel]').forEach(b=>b.classList.toggle('active',b.dataset.channel==='grab'));drawPayment();el('status').textContent='เลือกช่องทาง GrabFood สำหรับบันทึกด้วยมือแล้ว โปรดตรวจสอบช่องทางและกดสรุปการขาย';document.querySelector('.channel-tabs').scrollIntoView({behavior:'smooth',block:'center'})};
-el('checkout').onclick=async()=>{if(saving||!cart.length)return;const subtotal=cart.reduce((s,x)=>s+x.qty*Number(x.price),0),discount=Number(el('discount').value);if(!Number.isFinite(discount)||discount<0||discount>subtotal)return alert('ส่วนลดไม่ถูกต้อง');saving=true;el('checkout').disabled=true;try{const channel=el('channel').value,payment=['grab','lineman','shopee','robinhood'].includes(channel)?channel:el('payment').value;const lines=cart.map(m=>({menu_id:m.id,name_snapshot:m.name,category_snapshot:categories.find(c=>c.id===m.category_id)?.name||'',size_snapshot:m.size||'',qty:m.qty,unit_price:m.price}));const o=check(await db.from('pos_orders').insert({channel,payment_method:payment,subtotal,discount,discount_type:'amount',discount_input:discount,total:subtotal-discount,created_by:user.id}).select('id').single());try{check(await db.from('pos_order_items').insert(lines.map(x=>({...x,order_id:o.id}))))}catch(e){el('status').textContent='บิลถูกสร้างแต่รายการสินค้าไม่สมบูรณ์ กรุณาตรวจสอบฐานข้อมูลก่อนทำรายการใหม่';throw e}cart=[];el('discount').value=0;await refresh();el('status').textContent='บันทึกบิลลง Supabase สำเร็จ'}catch(e){error(e)}finally{saving=false;el('checkout').disabled=false}};
+function categoryIcon(name){return /ทั้งหมด/.test(name)?'▦':/จานเดียว|ข้าว/.test(name)?'🍛':/ก๋วยเตี๋ยว|ซุป/.test(name)?'🍜':/กับข้าว|แกง/.test(name)?'🍗':/เครื่องดื่ม|น้ำ/.test(name)?'🥤':/ของหวาน|ขนม/.test(name)?'🧁':/โปรโมชั่น/.test(name)?'🏷️':'⭐'}function photoFor(m){const n=m.name;const base='https://images.unsplash.com/';const id=/ข้าว|หมก/.test(n)?'photo-1512058564366-18510be2db19':/ไก่|ทอด|ย่าง/.test(n)?'photo-1562967914-608f82629710':/ส้มตำ|ยำ|สลัด/.test(n)?'photo-1512621776951-a57141f2eefd':/ก๋วยเตี๋ยว|ซุป|แกง/.test(n)?'photo-1569718212165-3a8278d5f624':/กาแฟ|ชา|นม/.test(n)?'photo-1541167760496-1628856ab772':/น้ำ|โซดา/.test(n)?'photo-1513558161293-cdaf765edfd4':/ขนม|เค้ก|โรตี|มะม่วง/.test(n)?'photo-1578985545062-69928b1d9587':'photo-1547592180-85f173990554';return base+id+'?auto=format&fit=crop&w=420&q=75'}function menuIcon(m){const n=m.name;return /ไก่ย่าง|สะเต๊ะ|เป็ด/.test(n)?'🍗':/ข้าว|หมก|บุหรี่/.test(n)?'🍛':/ซุป|ก๋วยเตี๋ยว|บะหมี่|แกง/.test(n)?'🍜':/ส้มตำ|ลาบ|ตำ|ยำ/.test(n)?'🥗':/กาแฟ|ชา|น้ำ|โซดา|โค้ก/.test(n)?'🥤':/ไอศกรีม|มะม่วง|โรตี|ขนม/.test(n)?'🍨':'🍽️'}function render(){const search=(el('searchMenu').value||'').trim().toLocaleLowerCase();el('catbar').innerHTML=[{id:'all',name:'ทั้งหมด'},...categories].map(c=>'<button data-category="'+esc(c.id)+'" class="'+(activeCategory===c.id?'active':'')+'" aria-pressed="'+(activeCategory===c.id)+'"><span class="category-icon" aria-hidden="true">'+categoryIcon(c.name)+'</span>'+esc(c.name)+'</button>').join('');el('products').innerHTML=menus.filter(m=>m.active&&(activeCategory==='all'||m.category_id===activeCategory)&&m.name.toLocaleLowerCase().includes(search)).map(m=>'<button class="tile" data-add="'+esc(m.id)+'"><div class="tile-art">'+productImage(m)+'</div><div class="tile-info"><strong>'+esc(m.name)+'</strong><small>'+esc(categories.find(c=>c.id===m.category_id)?.name||'')+' '+esc(m.size||'')+'</small><div class="tile-footer"><span>'+money(m.price)+'</span><b class="tile-plus">+</b></div></div></button>').join('')||'<p>ยังไม่มีเมนู</p>';el('menuList').innerHTML=menus.map(m=>'<div class="line"><span>'+esc(m.name)+' · '+money(m.price)+'</span><button data-edit="'+esc(m.id)+'">แก้ไข</button></div>').join('');el('sales').textContent=money(orders.reduce((s,o)=>s+Number(o.total),0));el('count').textContent=orders.length;el('salesBig').textContent=money(orders.reduce((s,o)=>s+Number(o.total),0));el('countBig').textContent=orders.length;el('avgBig').textContent=money(orders.length?orders.reduce((s,o)=>s+Number(o.total),0)/orders.length:0);const deliveryOrders=orders.filter(o=>isDelivery(o.channel));el('deliveryCount').textContent=deliveryOrders.length;el('recentOrders').innerHTML=deliveryOrders.slice(0,5).map(o=>'<div class="line"><b class="order-brand">'+esc(channelLabels[o.channel]||o.channel)+'</b><span>#'+esc(String(o.id).slice(0,8))+'</span><span class="order-time">'+esc(new Date(o.sold_at).toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))+'</span><span class="order-badge">บันทึกบิลแล้ว</span><strong>'+money(o.total)+'</strong></div>').join('')||'<p class="muted">ยังไม่มีออเดอร์เดลิเวอรี่ที่บันทึก</p>' ;el('history').innerHTML=orders.slice(0,30).map(o=>'<div class="line"><span>'+esc(new Date(o.sold_at).toLocaleString('th-TH'))+' · '+esc(o.channel)+'</span><strong>'+money(o.total)+'</strong></div>').join('');drawCart()}
+function drawCart(){const sum=cart.reduce((s,x)=>s+x.qty*Number(x.price),0),discount=Number(el('discount').value);el('cart').innerHTML=cart.map(x=>'<div class="line">'+productImage(x,'cart-art')+'<div class="cart-description">'+esc(x.name)+'<div class="quantity"><button aria-label="ลดจำนวน '+esc(x.name)+'" data-qty="-1" data-id="'+esc(x.id)+'">−</button><span>'+x.qty+'</span><button aria-label="เพิ่มจำนวน '+esc(x.name)+'" data-qty="1" data-id="'+esc(x.id)+'">+</button></div></div><b class="cart-amount">'+money(x.qty*x.price)+'</b><button class="remove-item" aria-label="ลบ '+esc(x.name)+' ออกจากตะกร้า" data-remove="'+esc(x.id)+'">×</button></div>').join('')||'<p class="muted">ยังไม่มีรายการ · เลือกเมนูเพื่อเริ่มขาย</p>';el('cartCount').textContent=cart.reduce((n,x)=>n+x.qty,0);el('sum').textContent=money(sum);el('net').textContent=discount>=0&&discount<=sum?money(sum-discount):'ส่วนลดไม่ถูกต้อง';el('checkout').textContent='สรุปการขาย ('+el('net').textContent+') →';el('checkout').disabled=saving||!cart.length||!Number.isFinite(discount)||discount<0||discount>sum}
+document.addEventListener('click',e=>{const cat=e.target.closest('[data-category]'),pay=e.target.closest('[data-payment]');if(cat){activeCategory=cat.dataset.category;render()}if(pay){el('payment').value=pay.dataset.payment;drawPayment()}const add=e.target.closest('[data-add]'),qty=e.target.closest('[data-qty]'),edit=e.target.closest('[data-edit]');if(add&&!saving){const m=menus.find(x=>x.id===add.dataset.add),x=cart.find(x=>x.id===m.id);if(x)x.qty++;else cart.push({...m,qty:1});drawCart()}if(qty&&!saving){const x=cart.find(x=>x.id===qty.dataset.id);if(x){x.qty+=Number(qty.dataset.qty);if(x.qty<=0)cart=cart.filter(y=>y!==x)}drawCart()}if(edit){const m=menus.find(x=>x.id===edit.dataset.edit);el('menuId').value=m.id;el('menuName').value=m.name;el('menuCategory').value=categories.find(c=>c.id===m.category_id)?.name||'';el('menuSize').value=m.size||'';el('menuPrice').value=m.price}});el('discount').oninput=drawCart;el('searchMenu').oninput=render;el('menuSearchTop').oninput=()=>{el('searchMenu').value=el('menuSearchTop').value;render()};document.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x===b));document.querySelector('[data-tab="'+b.dataset.side+'"]').click()});document.querySelectorAll('[data-channel]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-channel]').forEach(x=>x.classList.toggle('active',x===b));el('channel').value=b.dataset.channel;syncChannel();drawPayment()});const paymentLabels={cash:'เงินสด',qr:'QR Code',bank:'โอนธนาคาร',promptpay:'พร้อมเพย์',card:'บัตรเครดิต/เดบิต',government:'คนละครึ่ง'};function drawPayment(){const delivery=['grab','lineman','shopee','robinhood'].includes(el('channel').value);el('paychoices').classList.toggle('hidden',delivery);el('paymentNotice').textContent=delivery?'เดลิเวอรี่: บันทึกช่องทางแพลตฟอร์มเท่านั้น ไม่ดึงออเดอร์หรือยอดชำระอัตโนมัติ':'บันทึกวิธีรับชำระเท่านั้น ยังไม่ตัดเงินจริง กรุณาตรวจสอบยอดกับธนาคารหรือเครื่องรับบัตร';el('paychoices').innerHTML=Object.entries(paymentLabels).map(([k,v])=>'<button type="button" data-payment="'+k+'" class="'+(el('payment').value===k?'active':'')+'" aria-pressed="'+(el('payment').value===k)+'">'+icon(k==='cash'?'cash':k==='qr'?'qr':'card')+' '+v+'</button>').join('')}el('channel').onchange=()=>{syncChannel();drawPayment()};drawPayment();el('deliverySave').onclick=()=>{if(!isDelivery(el('channel').value))el('channel').value='grab';document.querySelectorAll('[data-channel]').forEach(b=>b.classList.toggle('active',b.dataset.channel==='grab'));syncChannel();drawPayment();el('status').textContent='เลือก '+channelLabels[el('channel').value]+' สำหรับบันทึกด้วยมือแล้ว โปรดตรวจสอบช่องทางและกดสรุปการขาย';document.querySelector('.channel-tabs').scrollIntoView({behavior:'smooth',block:'center'})};
+el('checkout').onclick=async()=>{if(saving||!cart.length)return;const subtotal=cart.reduce((s,x)=>s+x.qty*Number(x.price),0),discount=Number(el('discount').value);if(!Number.isFinite(discount)||discount<0||discount>subtotal)return alert('ส่วนลดไม่ถูกต้อง');saving=true;el('checkout').disabled=true;try{const channel=el('channel').value,payment=['grab','lineman','shopee','robinhood'].includes(channel)?channel:el('payment').value;const lines=cart.map(m=>({menu_id:m.id,name_snapshot:m.name,category_snapshot:categories.find(c=>c.id===m.category_id)?.name||'',size_snapshot:m.size||'',qty:m.qty,unit_price:m.price}));const o=check(await db.from('pos_orders').insert({channel,payment_method:payment,subtotal,discount,discount_type:'amount',discount_input:discount,total:subtotal-discount,created_by:user.id}).select('id').single());try{check(await db.from('pos_order_items').insert(lines.map(x=>({...x,order_id:o.id}))))}catch(e){el('status').textContent='บิลถูกสร้างแต่รายการสินค้าไม่สมบูรณ์ กรุณาตรวจสอบฐานข้อมูลก่อนทำรายการใหม่';throw e}cart=[];el('discount').value=0;el('cartNote').value='';await refresh();el('status').textContent='บันทึกบิลลง Supabase สำเร็จ'}catch(e){error(e)}finally{saving=false;el('checkout').disabled=false}};
 el('menuForm').onsubmit=async e=>{e.preventDefault();if(role==='cashier')return;try{const name=el('menuCategory').value.trim();let c=categories.find(x=>x.name===name);if(!c)c=check(await db.from('pos_categories').insert({name}).select().single());const data={name:el('menuName').value.trim(),category_id:c.id,size:el('menuSize').value.trim(),price:Number(el('menuPrice').value)};const id=el('menuId').value;if(id)check(await db.from('pos_menus').update(data).eq('id',id).select());else check(await db.from('pos_menus').insert(data).select());el('menuForm').reset();el('menuId').value='';await refresh();el('status').textContent='บันทึกเมนูแล้ว'}catch(e){error(e)}};
 el('resetMenu').onclick=()=>{el('menuForm').reset();el('menuId').value=''};
 el('refresh').onclick=()=>refresh().catch(error);
 el('csv').onclick=()=>{const data=[['วันเวลา','ช่องทาง','วิธีชำระ','ยอดก่อนลด','ส่วนลด','สุทธิ'],...orders.map(o=>[o.sold_at,o.channel,o.payment_method,o.subtotal,o.discount,o.total])];const csv='\ufeff'+data.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n'),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Jeerapan_POS_Cloud.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+
+
+function icon(name){const paths={cart:'<path d="M3 3h2l3 12h11l3-8H6"/><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/>',menu:'<path d="M4 3v7m3-7v7m3-7v7M4 7h6M7 10v11M18 3c-4 4-4 8 0 8h2V3h-2v18"/>',truck:'<path d="M2 5h12v12H2zM14 9h4l4 5v3h-8"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/>',chart:'<path d="M3 21h19M6 18v-6h4v6m3 0V8h4v10m3 0V4M4 8l6-4 4 2 7-4"/>',card:'<rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20M6 16h4"/>',store:'<path d="M3 10h18l-2-7H5zM4 10v11h16V10M9 21v-7h6v7M3 7h18"/>',clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v7l5 3"/>',group:'<path d="M3 7h18v4H3zM5 11l-2 10m16-10l2 10M8 3v4m8-4v4"/>',cash:'<path d="M2 7h20v13H2zM5 4h14M16 13h3M5 13h2"/><circle cx="12" cy="13" r="3"/>',qr:'<path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM13 13h4v4h4v4h-8v-4m8-4h-2M5 5h2v2H5m12-2h2v2h-2M5 17h2v2H5"/>'};return '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.card)+'</svg>'}
+document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=icon(e.dataset.icon));
+const channelLabels={grab:'Grab',lineman:'LINE MAN',shopee:'ShopeeFood',robinhood:'Robinhood'};
+const isDelivery=channel=>Object.hasOwn(channelLabels,channel);
+function connectionState(ok){const badge=el('connectionState');badge.classList.toggle('connected',ok);badge.querySelector('span').textContent=ok?'ออนไลน์':'รอเชื่อมต่อ'}
+function syncChannel(){const channel=el('channel').value;el('deliveryChannelRow').classList.toggle('hidden',!isDelivery(channel));Array.from(el('channel').options).forEach(o=>o.hidden=!isDelivery(o.value));document.querySelectorAll('[data-channel]').forEach(b=>{const selected=b.dataset.channel===(isDelivery(channel)?'grab':channel);b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected))})}
+// Use existing menu image URLs when supplied; illustrative photos never change menu records.
+function productImage(m,cls=''){let source=photoFor(m);try{const candidate=new URL(m.image_url||m.photo_url||source);if(['https:','http:'].includes(candidate.protocol))source=candidate.href}catch{}return '<img class="'+cls+'" src="'+esc(source)+'" alt="'+esc(m.name)+'" loading="lazy" referrerpolicy="no-referrer">'}
+document.addEventListener('error',e=>{if(e.target instanceof HTMLImageElement&&e.target.closest('.tile-art,#cart')){const fallback=document.createElement('span');fallback.className=e.target.className;fallback.textContent='🍽️';fallback.setAttribute('role','img');fallback.setAttribute('aria-label',e.target.alt);e.target.replaceWith(fallback)}},true);
+el('clearCart').onclick=()=>{if(saving)return;cart=[];el('discount').value=0;el('cartNote').value='';drawCart()};
+document.addEventListener('click',e=>{const remove=e.target.closest('[data-remove]');if(remove&&!saving){cart=cart.filter(x=>x.id!==remove.dataset.remove);drawCart()}});
+el('viewDelivery').onclick=()=>document.querySelector('[data-tab="report"]').click();
 if(location.hash.includes('error=')){const params=new URLSearchParams(location.hash.slice(1));el('status').textContent='ลิงก์เข้าสู่ระบบไม่สำเร็จ: '+(params.get('error_description')||params.get('error_code')||'กรุณาขอลิงก์ใหม่');history.replaceState(null,'',location.pathname)}
 const r=await db.auth.getSession();if(r.error)error(r.error);else await init(r.data.session?.user||null);
-</script></div></html>
+</script></html>
