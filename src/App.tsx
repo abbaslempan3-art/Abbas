@@ -436,6 +436,7 @@ export default function App({
   }
   const matching = (text: string) =>
     text.toLowerCase().includes(query.toLowerCase());
+  if (page === "chat-v4") return <ChatHub tasks={data.tasks} customers={data.customers} deals={workspaceStore.data.deals} />;
   return (
     <div className="app">
       <aside className={mobile ? "sidebar open" : "sidebar"}>
