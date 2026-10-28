@@ -3305,7 +3305,9 @@
         const search = (el("searchMenu").value || "")
           .trim()
           .toLocaleLowerCase();
-        const groups = categoryGroups();
+        const groups = categoryGroups().filter(
+          (group) => group.name !== "ข้าวหมก",
+        );
         const selectedGroup = groups.find((group) =>
           group.categoryIds.includes(activeCategory),
         );
