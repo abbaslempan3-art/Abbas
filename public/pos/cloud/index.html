@@ -133,7 +133,7 @@
         display: flex;
         flex-direction: column;
       }
-      .side button {
+      .side > button {
         display: flex;
         align-items: center;
         gap: 16px;
@@ -145,7 +145,7 @@
         font-size: 15px;
         border-radius: 10px;
       }
-      .side button.selected {
+      .side > button.selected {
         color: var(--red);
         background: #fde9ed;
         font-weight: 700;
@@ -229,20 +229,14 @@
       }
       .grid {
         display: grid;
-        grid-template-columns: 320px minmax(0, 1fr);
-        grid-template-areas: "cart products";
+        grid-template-columns: minmax(0, 1fr);
         gap: 16px;
         align-items: start;
       }
       #sale > .grid > .card:first-child {
-        grid-area: products;
         border: 0;
         background: transparent;
         padding: 0;
-        min-width: 0;
-      }
-      #sale > .grid > .cart-card {
-        grid-area: cart;
         min-width: 0;
       }
       #sale > .grid > .card:first-child > h2 {
@@ -617,7 +611,7 @@
           padding: 15px 10px;
         }
         .grid {
-          grid-template-columns: 300px minmax(0, 1fr);
+          grid-template-columns: minmax(0, 1fr);
         }
         .tiles {
           grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -633,7 +627,6 @@
       @media (max-width: 950px) {
         .grid {
           grid-template-columns: minmax(0, 1fr);
-          grid-template-areas: "products" "cart";
         }
         .tiles {
           grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -670,7 +663,7 @@
           padding: 8px;
           gap: 4px;
         }
-        .side button {
+        .side > button {
           white-space: nowrap;
           flex-shrink: 0;
           font-size: 13px;
@@ -1920,6 +1913,195 @@
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
+
+      /* Cart occupies the rail below Settings; its controls stay independent of navigation styles. */
+      .sidebar-cart-slot {
+        width: 100%;
+        min-width: 0;
+        margin-top: 12px;
+      }
+      #sidebar .cart-card {
+        position: static;
+        top: auto;
+        min-width: 0;
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        overflow: visible;
+        max-height: none;
+      }
+      #sidebar .cart-heading {
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      #sidebar .cart-heading h2 {
+        font-size: 14px;
+      }
+      #sidebar .cart-heading button {
+        font-size: 9px;
+        padding: 4px 6px;
+        gap: 3px;
+      }
+      #sidebar .cart-heading button svg {
+        width: 11px;
+        height: 11px;
+      }
+      #sidebar #cart {
+        max-height: 250px;
+      }
+      #sidebar #cart .line {
+        grid-template-columns: 36px minmax(0, 1fr) 14px;
+        grid-template-areas: "art description remove" "art amount amount";
+        gap: 4px 6px;
+        padding: 7px 0;
+        min-height: 59px;
+      }
+      #sidebar #cart .cart-art {
+        grid-area: art;
+        width: 36px;
+        height: 40px;
+      }
+      #sidebar .cart-description {
+        grid-area: description;
+        font-size: 10px;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      #sidebar .cart-description .quantity {
+        margin-top: 3px;
+      }
+      #sidebar .quantity button {
+        padding: 2px 6px;
+        font-size: 12px;
+      }
+      #sidebar .quantity span {
+        min-width: 18px;
+        font-size: 10px;
+      }
+      #sidebar .cart-amount {
+        grid-area: amount;
+        font-size: 11px;
+        text-align: right;
+      }
+      #sidebar .remove-item {
+        grid-area: remove;
+        font-size: 15px;
+        padding: 0;
+      }
+      #sidebar .cart-card .note-label {
+        font-size: 10px;
+        margin-top: 10px;
+      }
+      #sidebar .note-label small {
+        display: block;
+        font-size: 8px;
+      }
+      #sidebar .cart-meta {
+        padding: 7px;
+        font-size: 9px;
+        min-height: 45px;
+        max-width: 100%;
+        margin-bottom: 5px;
+      }
+      #sidebar .cart-card > .line {
+        font-size: 11px;
+        padding: 7px 0;
+      }
+      #sidebar .discount-row {
+        grid-template-columns: minmax(0, 1fr) 58px 30px;
+        gap: 5px;
+        font-size: 10px;
+        padding: 4px 0;
+      }
+      #sidebar .discount-row input {
+        width: 100%;
+        min-width: 0;
+        padding: 5px;
+        font-size: 11px;
+      }
+      #sidebar .shipping-row {
+        font-size: 10px;
+        margin: 5px 0 8px;
+      }
+      #sidebar .cart-card > .net-line {
+        font-size: 14px;
+        padding: 10px 0;
+      }
+      #sidebar #net {
+        font-size: 17px;
+      }
+      #sidebar .payment-header {
+        gap: 4px;
+        margin-bottom: 6px;
+      }
+      #sidebar .payment-title {
+        font-size: 11px;
+      }
+      #sidebar .more-payments > summary {
+        font-size: 8px;
+      }
+      #sidebar .paychoices {
+        gap: 5px;
+      }
+      #sidebar .paychoices button {
+        font-size: 9px;
+        padding: 7px 5px;
+        gap: 4px;
+        min-height: 36px;
+        border-radius: 8px;
+        min-width: 0;
+      }
+      #sidebar .paychoices svg {
+        width: 15px;
+        height: 15px;
+      }
+      #sidebar .cart-card .muted-note {
+        font-size: 8px;
+        line-height: 1.5;
+      }
+      #sidebar .cart-card .full {
+        font-size: 11px;
+        padding: 10px 5px;
+        min-height: 40px;
+        white-space: normal;
+      }
+      #sidebar .cart-actions button {
+        font-size: 9px;
+        padding: 9px 4px;
+        min-height: 37px;
+        margin-top: 8px;
+      }
+      #sidebar #cart > .muted {
+        font-size: 10px;
+        line-height: 1.6;
+      }
+      #sidebar #checkoutIssue {
+        font-size: 10px;
+        overflow-wrap: anywhere;
+      }
+      #sidebar .side-bottom {
+        position: static;
+        margin-top: 18px;
+      }
+      .cart-card [role="alert"] {
+        overflow-wrap: anywhere;
+      }
+      @media (min-width: 761px) {
+        #sidebar {
+          width: 233px;
+        }
+      }
+      @media (max-width: 760px) {
+        .sidebar-cart-slot {
+          display: none !important;
+        }
+        #mobileCartSlot {
+          min-width: 0;
+        }
+        .side .side-bottom {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -2019,6 +2201,78 @@
           <span class="nav-icon" data-icon="settings" aria-hidden="true"></span
           >ตั้งค่าร้าน
         </button>
+        <div id="sidebarCartSlot" class="sidebar-cart-slot hidden">
+          <div class="card cart-card" id="orderCart">
+            <div class="cart-heading">
+              <h2>รายการสั่งซื้อ</h2>
+              <button id="clearCart" type="button">
+                <span data-icon="trash" aria-hidden="true"></span>
+                ล้างรายการ
+              </button>
+            </div>
+            <div id="cart"></div>
+            <label class="note-label" for="cartNote"
+              >หมายเหตุรายการ <small>(ยังไม่บันทึกลงบิล)</small></label
+            >
+            <textarea
+              id="cartNote"
+              class="cart-meta"
+              rows="2"
+              placeholder="เช่น ไม่ใส่พริก / ลดหวาน / เพิ่มพิเศษ…"
+            ></textarea>
+            <div class="line">
+              <span>รวมรายการ (<span id="cartCount">0</span>)</span>
+              <strong id="sum">฿0</strong>
+            </div>
+            <div class="discount-row">
+              <label for="discount">ส่วนลด</label
+              ><input
+                id="discount"
+                type="number"
+                value="0"
+                min="0"
+                step=".01"
+                aria-label="ส่วนลดบาท"
+              /><span id="discountAmount">฿0</span>
+            </div>
+            <div class="shipping-row">
+              <span>ค่าจัดส่ง</span><span>฿0</span>
+            </div>
+            <div class="line net-line">
+              <strong>ยอดรวม</strong>
+              <strong id="net">฿0</strong>
+            </div>
+            <div class="payment-header">
+              <h3 class="payment-title">วิธีการชำระเงิน</h3>
+              <details class="more-payments" id="morePayments">
+                <summary>วิธีชำระอื่น</summary>
+                <div id="otherPaychoices" class="paychoices"></div>
+              </details>
+            </div>
+            <div id="paychoices" class="paychoices"></div>
+            <select id="payment" class="hidden">
+              <option value="cash">เงินสด</option>
+              <option value="qr">QR Code</option>
+              <option value="bank">โอนธนาคาร</option>
+              <option value="promptpay">พร้อมเพย์</option>
+              <option value="card">บัตรเครดิต</option>
+              <option value="government">คนละครึ่ง</option>
+            </select>
+            <p class="muted-note" id="paymentNotice">
+              บันทึกวิธีรับชำระเท่านั้น ยังไม่ตัดเงินจริง
+              กรุณาตรวจสอบยอดกับธนาคารหรือเครื่องรับบัตร
+            </p>
+            <button class="primary full" id="checkout">
+              สรุปการขายและบันทึกบิล →
+            </button>
+            <p id="checkoutIssue" class="notice hidden" role="alert"></p>
+            <div class="cart-actions">
+              <button class="delivery-action" type="button" id="deliverySave">
+                🚚 บันทึกเป็นออเดอร์เดลิเวอรี่
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="side-bottom">
           <span class="scooter" aria-hidden="true"
             ><svg viewBox="0 0 180 100" width="150" height="90">
@@ -2355,80 +2609,7 @@
                   >
                 </div>
               </div>
-              <div class="card cart-card">
-                <div class="cart-heading">
-                  <h2>รายการสั่งซื้อ</h2>
-                  <button id="clearCart" type="button">
-                    <span data-icon="trash" aria-hidden="true"></span>
-                    ล้างรายการ
-                  </button>
-                </div>
-                <div id="cart"></div>
-                <label class="note-label" for="cartNote"
-                  >หมายเหตุรายการ <small>(ยังไม่บันทึกลงบิล)</small></label
-                >
-                <textarea
-                  id="cartNote"
-                  class="cart-meta"
-                  rows="2"
-                  placeholder="เช่น ไม่ใส่พริก / ลดหวาน / เพิ่มพิเศษ…"
-                ></textarea>
-                <div class="line">
-                  <span>รวมรายการ (<span id="cartCount">0</span>)</span>
-                  <strong id="sum">฿0</strong>
-                </div>
-                <div class="discount-row">
-                  <label for="discount">ส่วนลด</label
-                  ><input
-                    id="discount"
-                    type="number"
-                    value="0"
-                    min="0"
-                    step=".01"
-                    aria-label="ส่วนลดบาท"
-                  /><span id="discountAmount">฿0</span>
-                </div>
-                <div class="shipping-row">
-                  <span>ค่าจัดส่ง</span><span>฿0</span>
-                </div>
-                <div class="line net-line">
-                  <strong>ยอดรวม</strong>
-                  <strong id="net">฿0</strong>
-                </div>
-                <div class="payment-header">
-                  <h3 class="payment-title">วิธีการชำระเงิน</h3>
-                  <details class="more-payments" id="morePayments">
-                    <summary>วิธีชำระอื่น</summary>
-                    <div id="otherPaychoices" class="paychoices"></div>
-                  </details>
-                </div>
-                <div id="paychoices" class="paychoices"></div>
-                <select id="payment" class="hidden">
-                  <option value="cash">เงินสด</option>
-                  <option value="qr">QR Code</option>
-                  <option value="bank">โอนธนาคาร</option>
-                  <option value="promptpay">พร้อมเพย์</option>
-                  <option value="card">บัตรเครดิต</option>
-                  <option value="government">คนละครึ่ง</option>
-                </select>
-                <p class="muted-note" id="paymentNotice">
-                  บันทึกวิธีรับชำระเท่านั้น ยังไม่ตัดเงินจริง
-                  กรุณาตรวจสอบยอดกับธนาคารหรือเครื่องรับบัตร
-                </p>
-                <button class="primary full" id="checkout">
-                  สรุปการขายและบันทึกบิล →
-                </button>
-                <p id="checkoutIssue" class="notice hidden" role="alert"></p>
-                <div class="cart-actions">
-                  <button
-                    class="delivery-action"
-                    type="button"
-                    id="deliverySave"
-                  >
-                    🚚 บันทึกเป็นออเดอร์เดลิเวอรี่
-                  </button>
-                </div>
-              </div>
+              <div id="mobileCartSlot" class="hidden"></div>
             </div>
           </section>
           <section id="menu" class="hidden">
@@ -2608,6 +2789,7 @@
         if (!u) {
           el("login").classList.remove("hidden");
           el("app").classList.add("hidden");
+          syncCartVisibility();
           return;
         }
         try {
@@ -2645,6 +2827,7 @@
           error(e);
           el("login").classList.remove("hidden");
           el("app").classList.add("hidden");
+          syncCartVisibility();
         }
       }
       el("loginForm").onsubmit = async (e) => {
@@ -2749,6 +2932,7 @@
             ["sale", "menu", "report", "integrations"].forEach((x) =>
               el(x).classList.toggle("hidden", x !== b.dataset.tab),
             );
+            syncCartVisibility();
           }),
       );
       async function refresh() {
@@ -3000,9 +3184,10 @@
           !Number.isFinite(discount) ||
           discount < 0 ||
           discount > sum;
+        syncCartVisibility();
       }
       document.addEventListener("click", (e) => {
-        if (saving && e.target.closest("#sale")) return;
+        if (saving && e.target.closest("#sale, #orderCart")) return;
         const cat = e.target.closest("[data-category]"),
           pay = e.target.closest("[data-payment]");
         if (cat) {
@@ -3138,6 +3323,7 @@
         let createdOrderId = null,
           itemsSaved = false;
         el("sale").inert = true;
+        el("orderCart").inert = true;
         el("sale").setAttribute("aria-busy", "true");
         el("checkout").disabled = true;
         el("checkout").textContent = "กำลังบันทึกบิล…";
@@ -3206,6 +3392,7 @@
         } finally {
           saving = false;
           el("sale").inert = false;
+          el("orderCart").inert = false;
           el("sale").removeAttribute("aria-busy");
           drawCart();
         }
@@ -4064,6 +4251,34 @@
         if (el("dineTablesPanel").open && !diningTableBusy)
           refreshDiningTables();
       };
+
+      const liveOrderCart = el("orderCart");
+      const compactCartMedia = window.matchMedia("(max-width: 760px)");
+      function syncCartVisibility() {
+        const visible =
+          Boolean(user) &&
+          !el("app").classList.contains("hidden") &&
+          !el("sale").classList.contains("hidden");
+        el("sidebarCartSlot").classList.toggle(
+          "hidden",
+          !visible || compactCartMedia.matches,
+        );
+        el("mobileCartSlot").classList.toggle(
+          "hidden",
+          !visible || !compactCartMedia.matches,
+        );
+        liveOrderCart.classList.toggle("hidden", !visible);
+      }
+      function placeOrderCart() {
+        const target = compactCartMedia.matches
+          ? el("mobileCartSlot")
+          : el("sidebarCartSlot");
+        if (liveOrderCart.parentElement !== target)
+          target.append(liveOrderCart);
+        syncCartVisibility();
+      }
+      compactCartMedia.addEventListener("change", placeOrderCart);
+      placeOrderCart();
       if (location.hash.includes("error=")) {
         const params = new URLSearchParams(location.hash.slice(1));
         el("status").textContent =
