@@ -2480,6 +2480,56 @@
         );
         render();
       }
+      // Known legacy spellings share a display group; database IDs and menu links stay unchanged.
+      function categoryDisplayName(value) {
+        const name = String(value ?? "")
+          .normalize("NFC")
+          .trim()
+          .replace(/\s+/gu, " ");
+        const compact = name.replace(/\s+/gu, "");
+        if (["ซุปแกงก๋วยเตี๋ยว", "ซุปแกงและก๋วยเตี๋ยว"].includes(compact))
+          return "ซุป แกง ก๋วยเตี๋ยว";
+        if (["ทอดยำทานเล่น", "ทอดยำและทานเล่น"].includes(compact))
+          return "ทอด ยำ ทานเล่น";
+        return name;
+      }
+      function categoryGroups() {
+        const byName = new Map(),
+          usage = new Map();
+        for (const menu of menus)
+          usage.set(menu.category_id, (usage.get(menu.category_id) || 0) + 1);
+        for (const category of categories) {
+          const name = categoryDisplayName(category.name);
+          if (!byName.has(name)) byName.set(name, []);
+          byName.get(name).push(category);
+        }
+        return Array.from(byName, ([name, members]) => {
+          const preferred = members.reduce((best, category) =>
+            (usage.get(category.id) || 0) > (usage.get(best.id) || 0)
+              ? category
+              : best,
+          );
+          return {
+            id: preferred.id,
+            name,
+            categoryIds: members.map((category) => category.id),
+          };
+        });
+      }
+      function existingCategoryForName(name, currentCategoryId) {
+        const displayName = categoryDisplayName(name);
+        const current = categories.find(
+          (category) => category.id === currentCategoryId,
+        );
+        if (current && categoryDisplayName(current.name) === displayName)
+          return current;
+        const group = categoryGroups().find(
+          (category) => category.name === displayName,
+        );
+        return group
+          ? categories.find((category) => category.id === group.id)
+          : undefined;
+      }
       function categoryIcon(name) {
         return /ทั้งหมด/.test(name)
           ? "▦"
@@ -2501,7 +2551,13 @@
         const search = (el("searchMenu").value || "")
           .trim()
           .toLocaleLowerCase();
-        el("catbar").innerHTML = [{ id: "all", name: "ทั้งหมด" }, ...categories]
+        const groups = categoryGroups();
+        const selectedGroup = groups.find((group) =>
+          group.categoryIds.includes(activeCategory),
+        );
+        activeCategory = selectedGroup?.id || "all";
+        const selectedIds = new Set(selectedGroup?.categoryIds || []);
+        el("catbar").innerHTML = [{ id: "all", name: "ทั้งหมด" }, ...groups]
           .map(
             (c) =>
               '<button data-category="' +
@@ -2522,8 +2578,7 @@
             .filter(
               (m) =>
                 m.active &&
-                (activeCategory === "all" ||
-                  m.category_id === activeCategory) &&
+                (activeCategory === "all" || selectedIds.has(m.category_id)) &&
                 m.name.toLocaleLowerCase().includes(search),
             )
             .map(
@@ -2880,7 +2935,7 @@
         let menuCommitted = false;
         syncMenuSubmit();
         try {
-          const categoryName = el("menuCategory").value.trim(),
+          const categoryName = categoryDisplayName(el("menuCategory").value),
             menuName = el("menuName").value.trim(),
             price = Number(el("menuPrice").value);
           if (
@@ -2890,7 +2945,10 @@
             price < 0
           )
             throw Error("กรุณาระบุชื่อ หมวดหมู่ และราคาให้ถูกต้อง");
-          let category = categories.find((x) => x.name === categoryName);
+          let category = existingCategoryForName(
+            categoryName,
+            currentEditedMenu()?.category_id,
+          );
           if (!category)
             category = check(
               await db
