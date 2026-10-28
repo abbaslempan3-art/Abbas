@@ -2247,28 +2247,58 @@
                   </summary>
                   <div class="dining-body">
                     <div class="dining-toolbar">
-                      <p>เพิ่มหมายเลขโต๊ะและเลือกขนาด 2, 4 หรือ 8 คน</p>
+                      <p>เลือกหมายเลขโต๊ะ 1–20 และจำนวนคนต่อโต๊ะ 1–20 คน</p>
                       <button id="refreshDiningTables" type="button">
                         รีเฟรชโต๊ะ
                       </button>
                     </div>
                     <form id="diningTableForm" class="dining-form hidden">
                       <label for="diningTableNumber"
-                        >หมายเลขโต๊ะ<input
-                          id="diningTableNumber"
-                          type="number"
-                          inputmode="numeric"
-                          min="1"
-                          max="9999"
-                          step="1"
-                          placeholder="เช่น 1"
-                          required
-                      /></label>
+                        >หมายเลขโต๊ะ<select id="diningTableNumber" required>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                          <option value="6">6</option>
+                          <option value="7">7</option>
+                          <option value="8">8</option>
+                          <option value="9">9</option>
+                          <option value="10">10</option>
+                          <option value="11">11</option>
+                          <option value="12">12</option>
+                          <option value="13">13</option>
+                          <option value="14">14</option>
+                          <option value="15">15</option>
+                          <option value="16">16</option>
+                          <option value="17">17</option>
+                          <option value="18">18</option>
+                          <option value="19">19</option>
+                          <option value="20">20</option>
+                        </select></label
+                      >
                       <label for="diningTableSeats"
-                        >ขนาดโต๊ะ<select id="diningTableSeats" required>
+                        >จำนวนคนต่อโต๊ะ<select id="diningTableSeats" required>
+                          <option value="1">1 คน</option>
                           <option value="2">2 คน</option>
+                          <option value="3">3 คน</option>
                           <option value="4">4 คน</option>
+                          <option value="5">5 คน</option>
+                          <option value="6">6 คน</option>
+                          <option value="7">7 คน</option>
                           <option value="8">8 คน</option>
+                          <option value="9">9 คน</option>
+                          <option value="10">10 คน</option>
+                          <option value="11">11 คน</option>
+                          <option value="12">12 คน</option>
+                          <option value="13">13 คน</option>
+                          <option value="14">14 คน</option>
+                          <option value="15">15 คน</option>
+                          <option value="16">16 คน</option>
+                          <option value="17">17 คน</option>
+                          <option value="18">18 คน</option>
+                          <option value="19">19 คน</option>
+                          <option value="20">20 คน</option>
                         </select></label
                       >
                       <button
@@ -3692,29 +3722,14 @@
       const canManageDiningTables = () =>
         Boolean(user) && ["admin", "manager"].includes(role);
       function diningTablePicture(seats) {
-        const points =
-          seats === 2
-            ? [
-                [16, 40],
-                [84, 40],
-              ]
-            : seats === 4
-              ? [
-                  [30, 10],
-                  [70, 10],
-                  [30, 70],
-                  [70, 70],
-                ]
-              : [
-                  [25, 10],
-                  [50, 10],
-                  [75, 10],
-                  [25, 70],
-                  [50, 70],
-                  [75, 70],
-                  [9, 40],
-                  [91, 40],
-                ];
+        const count = Math.min(20, Math.max(1, Number(seats) || 1));
+        const points = Array.from({ length: count }, (_, index) => {
+          const angle = (2 * Math.PI * index) / count - Math.PI / 2;
+          return [
+            Number((50 + 40 * Math.cos(angle)).toFixed(2)),
+            Number((40 + 30 * Math.sin(angle)).toFixed(2)),
+          ];
+        });
         return (
           '<svg width="100" height="70" viewBox="0 0 100 80" fill="none" aria-hidden="true"><rect x="23" y="22" width="54" height="36" rx="9" fill="currentColor" opacity=".13" stroke="currentColor" stroke-width="2"/>' +
           points
@@ -3755,6 +3770,19 @@
           "hidden",
           !diningTableEditingId,
         );
+        const numberSelect = el("diningTableNumber");
+        for (const option of numberSelect.options)
+          option.disabled = diningTables.some(
+            (table) =>
+              table.id !== diningTableEditingId &&
+              table.table_number === Number(option.value),
+          );
+        if (numberSelect.selectedOptions[0]?.disabled || !numberSelect.value) {
+          numberSelect.value =
+            Array.from(numberSelect.options).find((option) => !option.disabled)
+              ?.value || "";
+        }
+        if (!numberSelect.value) el("saveDiningTable").disabled = true;
       }
       function renderDiningTables() {
         syncDiningTableForm();
@@ -3770,7 +3798,10 @@
             "</p>";
           return;
         }
-        el("diningTableList").innerHTML = [2, 4, 8]
+        el("diningTableList").innerHTML = Array.from(
+          new Set(diningTables.map((table) => table.seats)),
+        )
+          .sort((a, b) => a - b)
           .map((seats) => {
             const rows = diningTables.filter((table) => table.seats === seats);
             return (
@@ -3869,11 +3900,13 @@
         if (
           !Number.isInteger(number) ||
           number < 1 ||
-          number > 9999 ||
-          ![2, 4, 8].includes(seats)
+          number > 20 ||
+          !Number.isInteger(seats) ||
+          seats < 1 ||
+          seats > 20
         ) {
           el("diningTableStatus").textContent =
-            "กรุณาระบุหมายเลขโต๊ะ 1–9999 และเลือก 2, 4 หรือ 8 คน";
+            "กรุณาเลือกหมายเลขโต๊ะ 1–20 และจำนวนคน 1–20 คน";
           return;
         }
         if (
