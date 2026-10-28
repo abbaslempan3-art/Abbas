@@ -1943,7 +1943,7 @@
       }
       @media (min-width: 761px) {
         #sidebar {
-          width: min(466px, 40vw);
+          width: min(582.5px, 45vw);
         }
       }
       @media (max-width: 760px) {
@@ -1958,10 +1958,10 @@
         }
       }
 
-      /* Compact square cards keep their size even when a filter returns a single menu. */
+      /* Larger square cards keep their size even when a filter returns a single menu. */
       #products {
-        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 264px), 1fr));
+        gap: 20px;
       }
       #products .tile {
         display: flex;
@@ -1971,74 +1971,151 @@
         height: auto;
         min-width: 0;
         min-height: 0;
-        border-radius: 12px;
+        border-radius: 24px;
       }
       #products .tile-art {
         flex: 1 1 0;
         width: 100%;
         height: auto;
         min-height: 0;
-        font-size: 32px;
+        font-size: 64px;
       }
       #products .tile-info {
         display: flex;
         flex-direction: column;
-        flex: 0 0 68px;
+        flex: 0 0 136px;
         min-height: 0;
-        padding: 5px 7px;
+        padding: 10px 14px;
         overflow: hidden;
       }
       #products .tile strong {
-        font-size: 11px;
-        line-height: 12px;
+        font-size: 22px;
+        line-height: 24px;
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
-        max-height: 24px;
+        max-height: 48px;
         overflow: hidden;
         overflow-wrap: anywhere;
       }
       #products .tile .menu-size:not(:empty) {
-        font-size: 9px;
-        line-height: 10px;
+        font-size: 18px;
+        line-height: 20px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       #products .tile-footer {
-        height: 22px;
+        height: 44px;
         flex-shrink: 0;
         margin-top: auto;
       }
       #products .tile-footer span {
-        font-size: 15px;
+        font-size: 30px;
       }
       #products .tile-plus {
-        width: 22px;
-        height: 22px;
-        font-size: 18px;
+        width: 44px;
+        height: 44px;
+        font-size: 36px;
       }
       #products .image-placeholder {
-        gap: 4px;
+        gap: 8px;
       }
       #products .image-placeholder svg {
-        width: 25px;
-        height: 25px;
+        width: 50px;
+        height: 50px;
       }
       #products .image-placeholder small {
-        font-size: 9px;
+        font-size: 18px;
       }
       @media (max-width: 480px) {
         #products {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: minmax(0, 1fr);
         }
       }
 
-      /* Desktop: double the original 233px rail and keep sales at 2.5/4 of its former width. */
+      /* Fill the entire sales region, including the formerly empty right-hand area. */
+      #sale {
+        width: 100%;
+        max-width: none;
+      }
       @media (min-width: 1181px) {
-        #sale {
-          width: calc((100vw - 233px - 30px) * 0.625);
-          max-width: 100%;
+        #sale .sale-title {
+          min-height: 78px;
+          margin-bottom: 20px;
+        }
+        #sale .sale-title h2 {
+          font-size: 30px;
+        }
+        #sale .sale-title h2 svg {
+          width: 36px;
+          height: 36px;
+        }
+        #sale .sale-title small {
+          font-size: 16px;
+        }
+        #sale .search-tools {
+          width: 50%;
+        }
+        #sale .search-tools input {
+          flex: 1;
+          min-width: 0;
+          width: 100%;
+          height: 55px;
+          font-size: 16px;
+        }
+        #sale .scan-button {
+          width: 54px;
+          height: 55px;
+        }
+        #sale .channel-tabs {
+          height: 80px;
+          margin-bottom: 18px;
+        }
+        #sale .channel-tabs button {
+          font-size: 19px;
+        }
+        #sale .channel-tabs small {
+          font-size: 14px;
+        }
+        #sale .channel-icon svg {
+          width: 34px;
+          height: 34px;
+        }
+        #sale .catbar {
+          height: 114px;
+          margin-bottom: 16px;
+          gap: 8px;
+        }
+        #sale .catbar button {
+          font-size: 15px;
+          min-width: 90px;
+        }
+        #sale .category-icon {
+          width: 49px;
+          height: 49px;
+          font-size: 29px;
+        }
+        #sale .dining-panel > summary {
+          font-size: 16px;
+          padding: 15px 18px;
+        }
+        #sale .dining-heading svg {
+          width: 28px;
+          height: 28px;
+        }
+        #sale .dining-count {
+          font-size: 14px;
+        }
+        #sale .recent-heading h3 {
+          font-size: 21px;
+        }
+        #sale .recent-orders .line {
+          min-height: 49px;
+          font-size: 14px;
+        }
+        #sale .recent-orders .line > span {
+          font-size: 13px;
         }
       }
       @media (min-width: 761px) and (max-width: 1000px) {
@@ -2057,6 +2134,260 @@
           width: 48px;
           height: 48px;
         }
+      }
+
+      /* Enlarge the complete left rail with the same 1.25 scale as the sales controls. */
+      @media (min-width: 1181px) {
+        #sidebar {
+          padding: 27.5px 21.25px 20px;
+          gap: 8.75px;
+        }
+        #sidebar > button {
+          font-size: 17.5px;
+          min-height: 58.75px;
+          padding: 13.75px 17.5px;
+          gap: 12.5px;
+          border-radius: 12.5px;
+        }
+        #sidebar > button .nav-icon,
+        #sidebar > button .nav-icon svg {
+          width: 30px;
+          height: 30px;
+        }
+        #sidebar .nav-count {
+          min-width: 30px;
+          height: 30px;
+          font-size: 14px;
+        }
+        #sidebarCartSlot {
+          margin-top: 15px;
+        }
+        #sidebar .cart-card {
+          padding: 21.25px 23.75px;
+          border-radius: 15px;
+        }
+        #sidebar .cart-heading {
+          gap: 10px;
+          margin-bottom: 5px;
+        }
+        #sidebar .cart-heading h2 {
+          font-size: 27.5px;
+        }
+        #sidebar .cart-heading button {
+          font-size: 13.75px;
+          padding: 6.25px 11.25px;
+        }
+        #sidebar .cart-heading button svg {
+          width: 17.5px;
+          height: 17.5px;
+        }
+        #sidebar #cart {
+          max-height: 310px;
+        }
+        #sidebar #cart .line {
+          grid-template-columns: 90px minmax(0, 1fr) auto auto;
+          gap: 12.5px;
+          padding: 7.5px 0;
+          min-height: 95px;
+        }
+        #sidebar #cart .cart-art {
+          width: 90px;
+          height: 80px;
+        }
+        #sidebar .cart-description {
+          font-size: 16.25px;
+        }
+        #sidebar .quantity {
+          margin-top: 5px;
+          border-radius: 10px;
+        }
+        #sidebar .quantity button {
+          font-size: 21.25px;
+          padding: 3.75px 12.5px;
+        }
+        #sidebar .quantity span {
+          min-width: 35px;
+        }
+        #sidebar .cart-amount {
+          font-size: 17.5px;
+        }
+        #sidebar .remove-item {
+          font-size: 23.75px;
+        }
+        #sidebar .note-label {
+          font-size: 15px;
+          margin-top: 12.5px;
+        }
+        #sidebar .note-label small {
+          font-size: 12.5px;
+        }
+        #sidebar .cart-meta {
+          font-size: 15px;
+          padding: 13.75px;
+          min-height: 73.75px;
+        }
+        #sidebar .cart-card > .line {
+          font-size: 17.5px;
+          padding: 12.5px 0;
+        }
+        #sidebar .discount-row {
+          grid-template-columns: 117.5px 148.75px 1fr;
+          gap: 12.5px;
+          font-size: 17.5px;
+        }
+        #sidebar .discount-row input {
+          width: 100%;
+          min-width: 0;
+          padding: 10px 15px;
+          font-size: 17.5px;
+        }
+        #sidebar .shipping-row {
+          font-size: 17.5px;
+        }
+        #sidebar .cart-card > .net-line {
+          font-size: 25px;
+          padding: 20px 0;
+        }
+        #sidebar #net {
+          font-size: 30px;
+        }
+        #sidebar .payment-header {
+          margin-bottom: 11.25px;
+        }
+        #sidebar .payment-title {
+          font-size: 17.5px;
+        }
+        #sidebar .more-payments > summary {
+          font-size: 12.5px;
+        }
+        #sidebar .paychoices {
+          gap: 12.5px;
+        }
+        #sidebar .paychoices button {
+          font-size: 16.25px;
+          min-height: 58.75px;
+          padding: 15px 12.5px;
+          gap: 10px;
+        }
+        #sidebar .paychoices svg {
+          width: 28.75px;
+          height: 28.75px;
+        }
+        #sidebar .cart-card .muted-note {
+          font-size: 12.5px;
+        }
+        #sidebar .cart-card .full {
+          font-size: 18.75px;
+          padding: 18.75px 12.5px;
+          min-height: 66.25px;
+        }
+        #sidebar .cart-actions button {
+          font-size: 17.5px;
+          padding: 15px;
+          min-height: 62.5px;
+          margin-top: 15px;
+        }
+        #sidebar #cart > .muted {
+          font-size: 17.5px;
+        }
+        #sidebar .side-bottom {
+          padding: 21.25px 22.5px 18.75px;
+          margin-top: 22.5px;
+          font-size: 17.5px;
+        }
+        #sidebar .scooter {
+          height: 105px;
+          margin-bottom: 12.5px;
+        }
+        #sidebar .scooter svg {
+          width: 187.5px;
+          height: 112.5px;
+        }
+        #sidebar .side-bottom p {
+          font-size: 16.25px;
+        }
+        #sidebar .side-bottom button {
+          font-size: 16.25px;
+          min-height: 48.75px;
+          padding: 10px 6.25px;
+        }
+      }
+
+      /* Strong visual hierarchy makes the complete sidebar easy to spot. */
+      #sidebar {
+        background: linear-gradient(180deg, #fff0f3 0%, #fff8fa 100%);
+        border-right: 2px solid #e9b6c2;
+        box-shadow: 5px 0 20px #7b092312;
+      }
+      #sidebar > button {
+        background: #fff;
+        border: 1px solid #efd5dc;
+        color: #482430;
+        font-weight: 700;
+      }
+      #sidebar > button:hover {
+        background: #ffe3ea;
+        border-color: #cf6c83;
+      }
+      #sidebar > button.selected {
+        background: #b6082a;
+        border-color: #b6082a;
+        color: #fff;
+        box-shadow: 0 5px 12px #b6082a26;
+      }
+      #sidebar > button.selected .nav-count {
+        background: #fff;
+        color: #b6082a;
+      }
+      #sidebar .cart-card,
+      #orderCart {
+        border: 2px solid #b6082a;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 10px 24px #9f12351a;
+      }
+      #sidebar .cart-heading,
+      #orderCart .cart-heading {
+        background: #b6082a;
+        color: #fff;
+        border-radius: 11px;
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+      #sidebar .cart-heading h2,
+      #orderCart .cart-heading h2 {
+        color: #fff;
+      }
+      #sidebar .cart-heading button,
+      #orderCart .cart-heading button {
+        background: #fff;
+        border-color: #fff;
+        color: #a40022;
+      }
+      #sidebar .cart-card > .net-line,
+      #orderCart > .net-line {
+        background: #fff0f3;
+        border-radius: 12px;
+        padding: 16px 12px;
+        margin-bottom: 14px;
+      }
+      #sidebar #net {
+        color: #a90024;
+        font-weight: 900;
+      }
+      #sidebar .cart-card .full,
+      #orderCart .full {
+        font-weight: 800;
+        box-shadow: 0 5px 12px #b6082a26;
+      }
+      #sidebar .cart-card .full:disabled,
+      #orderCart .full:disabled {
+        opacity: 0.65;
+      }
+      #sidebar .side-bottom {
+        background: #fff;
+        border: 1px solid #edc2cc;
+        box-shadow: 0 5px 16px #7b09230a;
       }
     </style>
   </head>
