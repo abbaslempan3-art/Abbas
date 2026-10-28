@@ -1925,155 +1925,10 @@
         top: auto;
         min-width: 0;
         width: 100%;
-        padding: 10px;
+        padding: 17px 19px;
         border-radius: 12px;
         overflow: visible;
         max-height: none;
-      }
-      #sidebar .cart-heading {
-        gap: 6px;
-        margin-bottom: 6px;
-      }
-      #sidebar .cart-heading h2 {
-        font-size: 14px;
-      }
-      #sidebar .cart-heading button {
-        font-size: 9px;
-        padding: 4px 6px;
-        gap: 3px;
-      }
-      #sidebar .cart-heading button svg {
-        width: 11px;
-        height: 11px;
-      }
-      #sidebar #cart {
-        max-height: 250px;
-      }
-      #sidebar #cart .line {
-        grid-template-columns: 36px minmax(0, 1fr) 14px;
-        grid-template-areas: "art description remove" "art amount amount";
-        gap: 4px 6px;
-        padding: 7px 0;
-        min-height: 59px;
-      }
-      #sidebar #cart .cart-art {
-        grid-area: art;
-        width: 36px;
-        height: 40px;
-      }
-      #sidebar .cart-description {
-        grid-area: description;
-        font-size: 10px;
-        min-width: 0;
-        overflow-wrap: anywhere;
-      }
-      #sidebar .cart-description .quantity {
-        margin-top: 3px;
-      }
-      #sidebar .quantity button {
-        padding: 2px 6px;
-        font-size: 12px;
-      }
-      #sidebar .quantity span {
-        min-width: 18px;
-        font-size: 10px;
-      }
-      #sidebar .cart-amount {
-        grid-area: amount;
-        font-size: 11px;
-        text-align: right;
-      }
-      #sidebar .remove-item {
-        grid-area: remove;
-        font-size: 15px;
-        padding: 0;
-      }
-      #sidebar .cart-card .note-label {
-        font-size: 10px;
-        margin-top: 10px;
-      }
-      #sidebar .note-label small {
-        display: block;
-        font-size: 8px;
-      }
-      #sidebar .cart-meta {
-        padding: 7px;
-        font-size: 9px;
-        min-height: 45px;
-        max-width: 100%;
-        margin-bottom: 5px;
-      }
-      #sidebar .cart-card > .line {
-        font-size: 11px;
-        padding: 7px 0;
-      }
-      #sidebar .discount-row {
-        grid-template-columns: minmax(0, 1fr) 58px 30px;
-        gap: 5px;
-        font-size: 10px;
-        padding: 4px 0;
-      }
-      #sidebar .discount-row input {
-        width: 100%;
-        min-width: 0;
-        padding: 5px;
-        font-size: 11px;
-      }
-      #sidebar .shipping-row {
-        font-size: 10px;
-        margin: 5px 0 8px;
-      }
-      #sidebar .cart-card > .net-line {
-        font-size: 14px;
-        padding: 10px 0;
-      }
-      #sidebar #net {
-        font-size: 17px;
-      }
-      #sidebar .payment-header {
-        gap: 4px;
-        margin-bottom: 6px;
-      }
-      #sidebar .payment-title {
-        font-size: 11px;
-      }
-      #sidebar .more-payments > summary {
-        font-size: 8px;
-      }
-      #sidebar .paychoices {
-        gap: 5px;
-      }
-      #sidebar .paychoices button {
-        font-size: 9px;
-        padding: 7px 5px;
-        gap: 4px;
-        min-height: 36px;
-        border-radius: 8px;
-        min-width: 0;
-      }
-      #sidebar .paychoices svg {
-        width: 15px;
-        height: 15px;
-      }
-      #sidebar .cart-card .muted-note {
-        font-size: 8px;
-        line-height: 1.5;
-      }
-      #sidebar .cart-card .full {
-        font-size: 11px;
-        padding: 10px 5px;
-        min-height: 40px;
-        white-space: normal;
-      }
-      #sidebar .cart-actions button {
-        font-size: 9px;
-        padding: 9px 4px;
-        min-height: 37px;
-        margin-top: 8px;
-      }
-      #sidebar #cart > .muted {
-        font-size: 10px;
-        line-height: 1.6;
       }
       #sidebar #checkoutIssue {
         font-size: 10px;
@@ -2088,7 +1943,7 @@
       }
       @media (min-width: 761px) {
         #sidebar {
-          width: 233px;
+          width: min(466px, 40vw);
         }
       }
       @media (max-width: 760px) {
@@ -2176,6 +2031,31 @@
       @media (max-width: 480px) {
         #products {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      /* Desktop: double the original 233px rail and keep sales at 2.5/4 of its former width. */
+      @media (min-width: 1181px) {
+        #sale {
+          width: calc((100vw - 233px - 30px) * 0.625);
+          max-width: 100%;
+        }
+      }
+      @media (min-width: 761px) and (max-width: 1000px) {
+        .recent-orders .order-time {
+          display: none;
+        }
+        .recent-orders .line {
+          grid-template-columns: 55px minmax(0, 1fr) 65px 50px 72px;
+          gap: 5px;
+        }
+        #sidebar #cart .line {
+          grid-template-columns: 48px minmax(0, 1fr) auto auto;
+          gap: 6px;
+        }
+        #sidebar #cart .cart-art {
+          width: 48px;
+          height: 48px;
         }
       }
     </style>
