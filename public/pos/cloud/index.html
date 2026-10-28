@@ -1733,6 +1733,186 @@
       .side .nav-count {
         font-size: 11px;
       }
+
+      .dining-panel {
+        border: 1px solid #eee1df;
+        border-radius: 13px;
+        background: #fff;
+        margin: 0 0 14px;
+        overflow: hidden;
+      }
+      .dining-panel > summary {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        list-style: none;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .dining-panel > summary::-webkit-details-marker {
+        display: none;
+      }
+      .dining-panel > summary::after {
+        content: "⌄";
+        color: #a9787e;
+      }
+      .dining-heading {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        flex: 1;
+      }
+      .dining-heading svg {
+        color: var(--red);
+        width: 22px;
+        height: 22px;
+      }
+      .dining-count {
+        font-size: 11px;
+        border-radius: 20px;
+        background: #fff0f2;
+        color: var(--red);
+        padding: 4px 9px;
+        white-space: nowrap;
+      }
+      .dining-body {
+        border-top: 1px solid #f2e9e6;
+        padding: 14px;
+      }
+      .dining-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .dining-toolbar p {
+        font-size: 12px;
+        color: #8a777a;
+        margin: 0;
+      }
+      .dining-toolbar button {
+        font-size: 11px;
+        padding: 7px 9px;
+        white-space: nowrap;
+      }
+      .dining-form {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        background: #fcfaf8;
+        padding: 12px;
+        border-radius: 11px;
+      }
+      .dining-form label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 110px;
+        font-size: 12px;
+      }
+      .dining-form input,
+      .dining-form select {
+        width: 100%;
+        min-width: 0;
+        background: white;
+        font-size: 13px;
+        padding: 9px;
+      }
+      .dining-form button {
+        font-size: 12px;
+        min-height: 38px;
+      }
+      .dining-status {
+        font-size: 12px;
+        color: #9b3f4d;
+        line-height: 1.6;
+        margin: 8px 0;
+      }
+      .dining-size-group h3 {
+        font-size: 13px;
+        margin: 14px 0 9px;
+        color: #5b5053;
+      }
+      .dining-size-group h3 small {
+        font-weight: 400;
+        color: #999;
+      }
+      .dining-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+      }
+      .dining-table {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px;
+        border: 1px solid #e9e4e2;
+        border-radius: 13px;
+        background: #fff;
+        color: #378471;
+      }
+      .dining-table.dining-seats-4 {
+        color: #4174ab;
+      }
+      .dining-table.dining-seats-8 {
+        color: #b17b2a;
+      }
+      .dining-table > strong {
+        font-size: 15px;
+        color: #353039;
+      }
+      .dining-table > span {
+        font-size: 11px;
+        color: #8b8081;
+      }
+      .dining-actions {
+        display: flex;
+        gap: 5px;
+        margin-top: 6px;
+        width: 100%;
+      }
+      .dining-actions button {
+        font-size: 10px;
+        padding: 6px 4px;
+        flex: 1;
+        white-space: nowrap;
+      }
+      .dining-actions .dining-delete {
+        color: #b70825;
+        border-color: #efc8cf;
+        background: #fff7f8;
+      }
+      @media (max-width: 480px) {
+        .dining-heading {
+          font-size: 12px;
+        }
+        .dining-body {
+          padding: 10px;
+        }
+        .dining-toolbar {
+          align-items: flex-start;
+        }
+        .dining-form {
+          gap: 8px;
+        }
+        .dining-form label {
+          min-width: 100px;
+        }
+        .dining-form button {
+          flex: 1;
+        }
+        .dining-cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
     </style>
   </head>
   <body>
@@ -2026,8 +2206,8 @@
                   </button>
                   <button
                     type="button"
-                    data-unavailable="tables"
-                    aria-label="โต๊ะอาหาร ยังไม่เปิดใช้งาน"
+                    id="manageDiningTables"
+                    aria-label="จัดการโต๊ะในออเดอร์หน้าร้าน"
                   >
                     <span
                       class="channel-icon"
@@ -2055,6 +2235,71 @@
                     aria-label="ค้นหาเมนู"
                   />
                 </div>
+
+                <details id="dineTablesPanel" class="dining-panel">
+                  <summary>
+                    <span class="dining-heading"
+                      ><span data-icon="table" aria-hidden="true"></span
+                      ><span>โต๊ะอาหาร · ออเดอร์หน้าร้าน</span></span
+                    ><span id="diningTableCount" class="dining-count"
+                      >0 โต๊ะ</span
+                    >
+                  </summary>
+                  <div class="dining-body">
+                    <div class="dining-toolbar">
+                      <p>เพิ่มหมายเลขโต๊ะและเลือกขนาด 2, 4 หรือ 8 คน</p>
+                      <button id="refreshDiningTables" type="button">
+                        รีเฟรชโต๊ะ
+                      </button>
+                    </div>
+                    <form id="diningTableForm" class="dining-form hidden">
+                      <label for="diningTableNumber"
+                        >หมายเลขโต๊ะ<input
+                          id="diningTableNumber"
+                          type="number"
+                          inputmode="numeric"
+                          min="1"
+                          max="9999"
+                          step="1"
+                          placeholder="เช่น 1"
+                          required
+                      /></label>
+                      <label for="diningTableSeats"
+                        >ขนาดโต๊ะ<select id="diningTableSeats" required>
+                          <option value="2">2 คน</option>
+                          <option value="4">4 คน</option>
+                          <option value="8">8 คน</option>
+                        </select></label
+                      >
+                      <button
+                        id="saveDiningTable"
+                        class="primary"
+                        type="submit"
+                      >
+                        เพิ่มโต๊ะ</button
+                      ><button
+                        id="cancelDiningTableEdit"
+                        class="hidden"
+                        type="button"
+                      >
+                        ยกเลิกแก้ไข
+                      </button>
+                    </form>
+                    <p id="diningTablePermission" class="muted-note hidden">
+                      เพิ่ม แก้ไข และลบโต๊ะได้เฉพาะผู้ดูแลหรือผู้จัดการ
+                    </p>
+                    <p
+                      id="diningTableStatus"
+                      class="dining-status"
+                      role="status"
+                    ></p>
+                    <div
+                      id="diningTableList"
+                      class="dining-list"
+                      aria-label="รายการโต๊ะหน้าร้าน"
+                    ></div>
+                  </div>
+                </details>
                 <div id="catbar" class="catbar"></div>
                 <div id="products" class="tiles"></div>
                 <div class="recent-orders">
@@ -2356,6 +2601,7 @@
                 : role;
           el("avatar").textContent = (u.email || "J").charAt(0).toUpperCase();
           await refresh();
+          await refreshDiningTables();
           connectionState(true);
           el("status").textContent = "เชื่อมฐานข้อมูลกลางสำเร็จ";
         } catch (e) {
@@ -3084,6 +3330,7 @@
       }
       function syncChannel() {
         const channel = el("channel").value;
+        el("dineTablesPanel").classList.toggle("hidden", channel !== "dine");
         el("deliveryChannelRow").classList.toggle(
           "hidden",
           !isDelivery(channel),
@@ -3333,10 +3580,6 @@
           "ตั้งค่าร้าน",
           "ระบบตั้งค่าร้านและสาขายังไม่เปิดใช้งาน ป้ายสาขาหลักเป็นชื่อแสดงผล ไม่ได้กรองข้อมูลตามสาขา",
         ],
-        tables: [
-          "โต๊ะอาหาร",
-          "ระบบจัดการโต๊ะยังไม่เปิดใช้งาน สามารถเลือกขายที่ร้านหรือช่องทางอื่นได้ตามปกติ",
-        ],
       };
       function showDialog(title, body) {
         el("dialogTitle").textContent = title;
@@ -3438,6 +3681,348 @@
           box.append(button);
         }
         showDialog("ช่องทางการขาย", box);
+      };
+
+      let diningTables = [],
+        diningTablesLoading = false,
+        diningTableBusy = false,
+        diningTableLoadError = "",
+        diningTableEditingId = null,
+        diningTableRequest = 0;
+      const canManageDiningTables = () =>
+        Boolean(user) && ["admin", "manager"].includes(role);
+      function diningTablePicture(seats) {
+        const points =
+          seats === 2
+            ? [
+                [16, 40],
+                [84, 40],
+              ]
+            : seats === 4
+              ? [
+                  [30, 10],
+                  [70, 10],
+                  [30, 70],
+                  [70, 70],
+                ]
+              : [
+                  [25, 10],
+                  [50, 10],
+                  [75, 10],
+                  [25, 70],
+                  [50, 70],
+                  [75, 70],
+                  [9, 40],
+                  [91, 40],
+                ];
+        return (
+          '<svg width="100" height="70" viewBox="0 0 100 80" fill="none" aria-hidden="true"><rect x="23" y="22" width="54" height="36" rx="9" fill="currentColor" opacity=".13" stroke="currentColor" stroke-width="2"/>' +
+          points
+            .map(
+              ([x, y]) =>
+                '<circle cx="' +
+                x +
+                '" cy="' +
+                y +
+                '" r="5" fill="currentColor" opacity=".65"/>',
+            )
+            .join("") +
+          "</svg>"
+        );
+      }
+      function syncDiningTableForm() {
+        const manage = canManageDiningTables();
+        el("diningTableForm").classList.toggle("hidden", !manage);
+        el("diningTablePermission").classList.toggle("hidden", manage);
+        el("saveDiningTable").textContent = diningTableBusy
+          ? "กำลังบันทึก…"
+          : diningTableEditingId
+            ? "บันทึกโต๊ะ"
+            : "เพิ่มโต๊ะ";
+        el("saveDiningTable").disabled =
+          diningTableBusy ||
+          diningTablesLoading ||
+          Boolean(diningTableLoadError) ||
+          !manage;
+        [
+          "diningTableNumber",
+          "diningTableSeats",
+          "cancelDiningTableEdit",
+        ].forEach((id) => (el(id).disabled = diningTableBusy));
+        el("refreshDiningTables").disabled =
+          diningTablesLoading || diningTableBusy;
+        el("cancelDiningTableEdit").classList.toggle(
+          "hidden",
+          !diningTableEditingId,
+        );
+      }
+      function renderDiningTables() {
+        syncDiningTableForm();
+        el("diningTableCount").textContent = diningTables.length + " โต๊ะ";
+        if (!diningTables.length) {
+          el("diningTableList").innerHTML =
+            '<p class="muted-note">' +
+            (diningTablesLoading
+              ? "กำลังโหลดโต๊ะ…"
+              : diningTableLoadError
+                ? "โหลดรายการโต๊ะไม่ได้ กรุณากดรีเฟรชโต๊ะ"
+                : "ยังไม่มีโต๊ะ เพิ่มหมายเลขโต๊ะและขนาดโต๊ะด้านบนได้เลย") +
+            "</p>";
+          return;
+        }
+        el("diningTableList").innerHTML = [2, 4, 8]
+          .map((seats) => {
+            const rows = diningTables.filter((table) => table.seats === seats);
+            return (
+              '<section class="dining-size-group"><h3>โต๊ะ ' +
+              seats +
+              " คน <small>(" +
+              rows.length +
+              ')</small></h3><div class="dining-cards">' +
+              (rows
+                .map(
+                  (table) =>
+                    '<article class="dining-table dining-seats-' +
+                    seats +
+                    '" data-dining-table="' +
+                    esc(table.id) +
+                    '">' +
+                    diningTablePicture(seats) +
+                    "<strong>โต๊ะ " +
+                    esc(table.table_number) +
+                    "</strong><span>" +
+                    seats +
+                    " ที่นั่ง</span>" +
+                    (canManageDiningTables()
+                      ? '<div class="dining-actions"><button type="button" data-edit-dining-table="' +
+                        esc(table.id) +
+                        '" ' +
+                        (diningTableBusy ? "disabled" : "") +
+                        '>แก้ไข</button><button type="button" class="dining-delete" data-archive-dining-table="' +
+                        esc(table.id) +
+                        '" ' +
+                        (diningTableBusy ? "disabled" : "") +
+                        ' aria-label="ลบโต๊ะ ' +
+                        esc(table.table_number) +
+                        '">ลบโต๊ะ</button></div>'
+                      : "") +
+                    "</article>",
+                )
+                .join("") || '<p class="muted-note">ยังไม่มีโต๊ะขนาดนี้</p>') +
+              "</div></section>"
+            );
+          })
+          .join("");
+      }
+      async function refreshDiningTables() {
+        if (!user) return;
+        const request = ++diningTableRequest;
+        diningTablesLoading = true;
+        syncDiningTableForm();
+        try {
+          const rows = check(
+            await db
+              .from("pos_dining_tables")
+              .select("id,table_number,seats,created_at")
+              .eq("active", true)
+              .order("table_number"),
+          );
+          if (request !== diningTableRequest) return;
+          if (!Array.isArray(rows)) throw Error("รูปแบบข้อมูลโต๊ะไม่ถูกต้อง");
+          diningTables = rows;
+          diningTableLoadError = "";
+        } catch (e) {
+          if (request !== diningTableRequest) return;
+          diningTableLoadError = e.message || String(e);
+          el("diningTableStatus").textContent =
+            "โหลดรายการโต๊ะไม่สำเร็จ กรุณากดรีเฟรชโต๊ะ";
+        } finally {
+          if (request === diningTableRequest) {
+            diningTablesLoading = false;
+            renderDiningTables();
+          }
+        }
+      }
+      function resetDiningTableForm() {
+        diningTableEditingId = null;
+        el("diningTableForm").reset();
+        syncDiningTableForm();
+      }
+      function diningTableError(e) {
+        return e.code === "23505"
+          ? "หมายเลขโต๊ะนี้มีอยู่แล้ว กรุณาใช้หมายเลขอื่น"
+          : e.message || String(e);
+      }
+      el("diningTableForm").onsubmit = async (event) => {
+        event.preventDefault();
+        if (
+          !canManageDiningTables() ||
+          diningTableBusy ||
+          diningTablesLoading ||
+          diningTableLoadError ||
+          saving
+        )
+          return;
+        const number = Number(el("diningTableNumber").value),
+          seats = Number(el("diningTableSeats").value),
+          id = diningTableEditingId;
+        if (
+          !Number.isInteger(number) ||
+          number < 1 ||
+          number > 9999 ||
+          ![2, 4, 8].includes(seats)
+        ) {
+          el("diningTableStatus").textContent =
+            "กรุณาระบุหมายเลขโต๊ะ 1–9999 และเลือก 2, 4 หรือ 8 คน";
+          return;
+        }
+        if (
+          diningTables.some(
+            (table) => table.id !== id && table.table_number === number,
+          )
+        ) {
+          el("diningTableStatus").textContent =
+            "หมายเลขโต๊ะนี้มีอยู่แล้ว กรุณาใช้หมายเลขอื่น";
+          return;
+        }
+        diningTableBusy = true;
+        renderDiningTables();
+        let committed = false;
+        try {
+          const result = id
+            ? await db
+                .from("pos_dining_tables")
+                .update({ table_number: number, seats })
+                .eq("id", id)
+                .eq("active", true)
+                .select("id")
+            : await db
+                .from("pos_dining_tables")
+                .insert({ table_number: number, seats, created_by: user.id })
+                .select("id");
+          const rows = check(result);
+          if (!Array.isArray(rows) || rows.length !== 1)
+            throw Error(
+              "บันทึกไม่สำเร็จ โต๊ะอาจถูกเปลี่ยนแล้วหรือไม่มีสิทธิ์ กรุณารีเฟรชโต๊ะ",
+            );
+          committed = true;
+          resetDiningTableForm();
+          await refreshDiningTables();
+          el("diningTableStatus").textContent =
+            (id ? "แก้ไข" : "เพิ่ม") +
+            "โต๊ะ " +
+            number +
+            " (" +
+            seats +
+            " คน) แล้ว" +
+            (diningTableLoadError
+              ? " แต่โหลดรายการล่าสุดไม่สำเร็จ กรุณารีเฟรชโต๊ะ"
+              : "");
+        } catch (e) {
+          el("diningTableStatus").textContent =
+            (committed
+              ? "บันทึกโต๊ะแล้ว แต่โหลดข้อมูลไม่สำเร็จ: "
+              : "บันทึกโต๊ะไม่สำเร็จ: ") + diningTableError(e);
+        } finally {
+          diningTableBusy = false;
+          renderDiningTables();
+        }
+      };
+      document.addEventListener("click", async (event) => {
+        const edit = event.target.closest("[data-edit-dining-table]"),
+          archive = event.target.closest("[data-archive-dining-table]");
+        if (
+          (!edit && !archive) ||
+          !canManageDiningTables() ||
+          diningTableBusy ||
+          diningTablesLoading ||
+          saving
+        )
+          return;
+        const table = diningTables.find(
+          (row) =>
+            row.id ===
+            (edit?.dataset.editDiningTable ||
+              archive?.dataset.archiveDiningTable),
+        );
+        if (!table) return;
+        if (edit) {
+          diningTableEditingId = table.id;
+          el("diningTableNumber").value = table.table_number;
+          el("diningTableSeats").value = table.seats;
+          el("diningTableStatus").textContent =
+            "กำลังแก้ไขโต๊ะ " + table.table_number;
+          syncDiningTableForm();
+          el("diningTableNumber").focus();
+          return;
+        }
+        if (
+          !confirm(
+            "ลบโต๊ะ " +
+              table.table_number +
+              " (" +
+              table.seats +
+              " คน) ออกจากรายการหน้าร้านหรือไม่? ระบบจะเก็บประวัติโต๊ะเดิมไว้",
+          )
+        )
+          return;
+        diningTableBusy = true;
+        renderDiningTables();
+        try {
+          const rows = check(
+            await db
+              .from("pos_dining_tables")
+              .update({ active: false })
+              .eq("id", table.id)
+              .eq("active", true)
+              .select("id"),
+          );
+          if (!Array.isArray(rows) || rows.length !== 1)
+            throw Error(
+              "ลบไม่สำเร็จ โต๊ะอาจถูกเปลี่ยนแล้วหรือไม่มีสิทธิ์ กรุณารีเฟรชโต๊ะ",
+            );
+          if (diningTableEditingId === table.id) resetDiningTableForm();
+          await refreshDiningTables();
+          el("diningTableStatus").textContent =
+            "ลบโต๊ะ " +
+            table.table_number +
+            " ออกจากรายการแล้ว" +
+            (diningTableLoadError
+              ? " แต่โหลดรายการล่าสุดไม่สำเร็จ กรุณารีเฟรชโต๊ะ"
+              : "");
+        } catch (e) {
+          el("diningTableStatus").textContent =
+            "ลบโต๊ะไม่สำเร็จ: " + diningTableError(e);
+        } finally {
+          diningTableBusy = false;
+          renderDiningTables();
+        }
+      });
+      el("refreshDiningTables").onclick = async () => {
+        if (diningTableBusy) return;
+        await refreshDiningTables();
+        if (!diningTableLoadError)
+          el("diningTableStatus").textContent = "รีเฟรชรายการโต๊ะแล้ว";
+      };
+      el("cancelDiningTableEdit").onclick = () => {
+        if (diningTableBusy) return;
+        resetDiningTableForm();
+        el("diningTableStatus").textContent = "ยกเลิกการแก้ไขแล้ว";
+      };
+      el("manageDiningTables").onclick = () => {
+        if (saving) return;
+        el("channel").value = "dine";
+        syncChannel();
+        drawPayment();
+        el("dineTablesPanel").open = true;
+        el("dineTablesPanel").scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      };
+      el("dineTablesPanel").ontoggle = () => {
+        if (el("dineTablesPanel").open && !diningTableBusy)
+          refreshDiningTables();
       };
       if (location.hash.includes("error=")) {
         const params = new URLSearchParams(location.hash.slice(1));
