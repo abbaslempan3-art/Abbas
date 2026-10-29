@@ -2774,6 +2774,62 @@
       #sidebar > button > .nav-label {
         text-align: left;
       }
+      /* Table management belongs to the Walk-in channel, not a fourth channel. */
+      #sale .channel-tabs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        height: auto;
+      }
+      .walkin-channel {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        border-right: 1px solid #e3dfe0;
+      }
+      .walkin-channel:has([data-channel="dine"].active) {
+        background: var(--red);
+        color: white;
+      }
+      #sale .walkin-channel > [data-channel="dine"] {
+        width: 100%;
+        border-right: 0;
+        flex: 1;
+      }
+      #sale .walkin-channel > #manageDiningTables {
+        margin: 0 12px 12px;
+        padding: 8px 12px;
+        min-height: 44px;
+        border: 1px solid #ffffff80;
+        border-radius: 9px;
+        background: #ffffff18;
+        color: white;
+        font-size: 16px;
+        gap: 8px;
+      }
+      #manageDiningTables small {
+        display: none;
+      }
+      #manageDiningTables .channel-icon svg {
+        width: 24px;
+        height: 24px;
+      }
+      #sale .walkin-channel > #manageDiningTables.active {
+        background: #fff;
+        color: var(--red);
+      }
+      @media (max-width: 760px) {
+        #sale .channel-tabs > button {
+          flex-direction: column;
+        }
+        #sale .walkin-channel > [data-channel="dine"] {
+          flex-direction: column;
+        }
+        #sale .walkin-channel > #manageDiningTables {
+          margin: 0 5px 8px;
+          padding: 8px 4px;
+          font-size: 14px;
+          flex-wrap: wrap;
+        }
+      }
     </style>
   </head>
   <body>
@@ -3105,19 +3161,36 @@
                   id="channelTabs"
                   aria-label="ช่องทางการขาย"
                 >
-                  <button
-                    data-channel="dine"
-                    class="active"
-                    aria-pressed="true"
-                  >
-                    <span
-                      class="channel-icon"
-                      data-icon="store"
-                      aria-hidden="true"
+                  <div class="walkin-channel">
+                    <button
+                      data-channel="dine"
+                      class="active"
+                      aria-pressed="true"
                     >
-                    </span>
-                    <span>ที่ร้าน<small>Walk-in</small> </span>
-                  </button>
+                      <span
+                        class="channel-icon"
+                        data-icon="store"
+                        aria-hidden="true"
+                      >
+                      </span>
+                      <span>ที่ร้าน<small>Walk-in</small> </span>
+                    </button>
+                    <button
+                      type="button"
+                      id="manageDiningTables"
+                      aria-pressed="false"
+                      aria-expanded="false"
+                      aria-controls="dineTablesPanel"
+                      aria-label="จัดการโต๊ะในออเดอร์หน้าร้าน"
+                    >
+                      <span
+                        class="channel-icon"
+                        data-icon="table"
+                        aria-hidden="true"
+                      ></span
+                      ><span>โต๊ะอาหาร<small>จัดการโต๊ะ</small></span>
+                    </button>
+                  </div>
                   <button data-channel="grab" class="" aria-pressed="false">
                     <span
                       class="channel-icon"
@@ -3135,21 +3208,6 @@
                     >
                     </span>
                     <span>สั่งล่วงหน้า<small>Pickup</small> </span>
-                  </button>
-                  <button
-                    type="button"
-                    id="manageDiningTables"
-                    aria-pressed="false"
-                    aria-expanded="false"
-                    aria-controls="dineTablesPanel"
-                    aria-label="จัดการโต๊ะในออเดอร์หน้าร้าน"
-                  >
-                    <span
-                      class="channel-icon"
-                      data-icon="table"
-                      aria-hidden="true"
-                    ></span
-                    ><span>โต๊ะอาหาร<small>จัดการโต๊ะ</small></span>
                   </button>
                 </div>
                 <div class="channel-select-row hidden" id="deliveryChannelRow">
@@ -4236,6 +4294,7 @@
         if (channel !== "dine") el("dineTablesPanel").open = false;
         const tablesSelected = channel === "dine" && el("dineTablesPanel").open;
         el("manageDiningTables").classList.toggle("active", tablesSelected);
+        el("manageDiningTables").classList.toggle("hidden", channel !== "dine");
         el("manageDiningTables").setAttribute(
           "aria-pressed",
           String(tablesSelected),
@@ -4254,7 +4313,6 @@
         );
         document.querySelectorAll("[data-channel]").forEach((b) => {
           const selected =
-            !tablesSelected &&
             b.dataset.channel === (isDelivery(channel) ? "grab" : channel);
           b.classList.toggle("active", selected);
           b.setAttribute("aria-pressed", String(selected));
