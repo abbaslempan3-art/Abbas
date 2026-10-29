@@ -2746,6 +2746,24 @@
         transform: translateY(-50%);
         margin-left: 0;
       }
+      /* All sidebar icons share one square frame and stroke weight. */
+      #sidebar > button > .nav-icon,
+      #sidebar > button > .nav-icon > svg {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        flex: 0 0 32px;
+      }
+      #sidebar > button > .nav-icon {
+        display: inline-grid;
+        place-items: center;
+        line-height: 0;
+      }
+      #sidebar > button > .nav-icon > svg {
+        display: block;
+        stroke-width: 1.8;
+      }
     </style>
   </head>
   <body>
