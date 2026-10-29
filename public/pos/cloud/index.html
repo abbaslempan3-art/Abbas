@@ -2727,7 +2727,7 @@
           height: 44px;
         }
       }
-      /* Center labels independently of the icon and optional notification count. */
+      /* Center each icon and label together; keep notification counts at the edge. */
       #sidebar > button {
         position: relative;
         justify-content: center;
@@ -2735,10 +2735,9 @@
         padding-inline: 56px;
       }
       #sidebar > button > .nav-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
+        position: static;
+        transform: none;
+        flex-shrink: 0;
       }
       #sidebar > button > .nav-count {
         position: absolute;
