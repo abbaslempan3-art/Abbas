@@ -2890,6 +2890,14 @@
         width: 28px;
         height: 28px;
       }
+      #channelTabs > button > span:last-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      #channelTabs > button small {
+        white-space: normal;
+        line-height: 1.5;
+      }
     </style>
   </head>
   <body>
@@ -3243,16 +3251,20 @@
                       aria-hidden="true"
                     >
                     </span>
-                    <span>เดลิเวอรี่<small>Grab · LINE MAN</small> </span>
+                    <span
+                      >เดลิเวอรี่<small
+                        >Grab / LINE MAN / Robinhood / Shopee</small
+                      >
+                    </span>
                   </button>
-                  <button data-channel="take" class="" aria-pressed="false">
+                  <button data-channel="tour" class="" aria-pressed="false">
                     <span
                       class="channel-icon"
-                      data-icon="clock"
+                      data-icon="users"
                       aria-hidden="true"
                     >
                     </span>
-                    <span>สั่งล่วงหน้า<small>Pickup</small> </span>
+                    <span>กรุ๊ปทัวร์<small>Tour Group</small> </span>
                   </button>
                 </div>
                 <div
@@ -4343,6 +4355,7 @@
         .querySelectorAll("[data-icon]")
         .forEach((e) => (e.innerHTML = icon(e.dataset.icon)));
       const channelLabels = {
+        tour: "กรุ๊ปทัวร์",
         grab: "Grab",
         lineman: "LINE MAN",
         shopee: "ShopeeFood",
