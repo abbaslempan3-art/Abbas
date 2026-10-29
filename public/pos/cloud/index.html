@@ -2727,6 +2727,26 @@
           height: 44px;
         }
       }
+      /* Center labels independently of the icon and optional notification count. */
+      #sidebar > button {
+        position: relative;
+        justify-content: center;
+        text-align: center;
+        padding-inline: 56px;
+      }
+      #sidebar > button > .nav-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      #sidebar > button > .nav-count {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 0;
+      }
     </style>
   </head>
   <body>
@@ -2782,21 +2802,20 @@
       <aside class="side" id="sidebar" aria-label="เมนูหลัก">
         <button class="selected" data-side="sale">
           <span class="nav-icon" data-icon="cart" aria-hidden="true"> </span
-          >ขายสินค้า
+          ><span class="nav-label">ขายสินค้า</span>
         </button>
         <button data-side="menu">
           <span class="nav-icon" data-icon="menu" aria-hidden="true"> </span
-          >จัดการเมนู
+          ><span class="nav-label">จัดการเมนู</span>
         </button>
         <button data-side="integrations">
           <span class="nav-icon" data-icon="truck" aria-hidden="true"> </span
-          >ออเดอร์เดลิเวอรี่<span class="nav-count" id="sideDeliveryCount"
-            >0</span
-          >
+          ><span class="nav-label">ออเดอร์เดลิเวอรี่</span
+          ><span class="nav-count" id="sideDeliveryCount">0</span>
         </button>
         <button data-side="report">
           <span class="nav-icon" data-icon="chart" aria-hidden="true"> </span
-          >รายงานยอดขาย
+          ><span class="nav-label">รายงานยอดขาย</span>
         </button>
         <button
           type="button"
@@ -2804,7 +2823,7 @@
           title="ระบบลูกค้ายังไม่เปิดใช้งาน"
         >
           <span class="nav-icon" data-icon="users" aria-hidden="true"></span
-          >ลูกค้า
+          ><span class="nav-label">ลูกค้า</span>
         </button>
         <button
           type="button"
@@ -2812,11 +2831,11 @@
           title="ระบบจัดการพนักงานยังไม่เปิดใช้งาน"
         >
           <span class="nav-icon" data-icon="user" aria-hidden="true"></span
-          >พนักงาน
+          ><span class="nav-label">พนักงาน</span>
         </button>
         <button data-side="integrations">
           <span class="nav-icon" data-icon="card" aria-hidden="true"> </span
-          >การชำระเงิน
+          ><span class="nav-label">การชำระเงิน</span>
         </button>
         <button
           type="button"
@@ -2824,7 +2843,7 @@
           title="ตั้งค่าร้านยังไม่เปิดใช้งาน"
         >
           <span class="nav-icon" data-icon="settings" aria-hidden="true"></span
-          >ตั้งค่าร้าน
+          ><span class="nav-label">ตั้งค่าร้าน</span>
         </button>
         <div id="sidebarCartSlot" class="sidebar-cart-slot hidden">
           <div class="card cart-card" id="orderCart">
