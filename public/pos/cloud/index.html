@@ -2764,6 +2764,16 @@
         display: block;
         stroke-width: 1.8;
       }
+      /* A shared text column keeps every sidebar icon in one vertical line. */
+      #sidebar > button {
+        display: grid;
+        grid-template-columns: 32px 190px;
+        column-gap: 12px;
+        justify-content: center;
+      }
+      #sidebar > button > .nav-label {
+        text-align: left;
+      }
     </style>
   </head>
   <body>
@@ -3129,6 +3139,9 @@
                   <button
                     type="button"
                     id="manageDiningTables"
+                    aria-pressed="false"
+                    aria-expanded="false"
+                    aria-controls="dineTablesPanel"
                     aria-label="จัดการโต๊ะในออเดอร์หน้าร้าน"
                   >
                     <span
@@ -3916,6 +3929,7 @@
               .querySelectorAll("[data-channel]")
               .forEach((x) => x.classList.toggle("active", x === b));
             el("channel").value = b.dataset.channel;
+            el("dineTablesPanel").open = false;
             syncChannel();
             drawPayment();
           }),
@@ -4219,6 +4233,17 @@
       }
       function syncChannel() {
         const channel = el("channel").value;
+        if (channel !== "dine") el("dineTablesPanel").open = false;
+        const tablesSelected = channel === "dine" && el("dineTablesPanel").open;
+        el("manageDiningTables").classList.toggle("active", tablesSelected);
+        el("manageDiningTables").setAttribute(
+          "aria-pressed",
+          String(tablesSelected),
+        );
+        el("manageDiningTables").setAttribute(
+          "aria-expanded",
+          String(tablesSelected),
+        );
         el("dineTablesPanel").classList.toggle("hidden", channel !== "dine");
         el("deliveryChannelRow").classList.toggle(
           "hidden",
@@ -4229,6 +4254,7 @@
         );
         document.querySelectorAll("[data-channel]").forEach((b) => {
           const selected =
+            !tablesSelected &&
             b.dataset.channel === (isDelivery(channel) ? "grab" : channel);
           b.classList.toggle("active", selected);
           b.setAttribute("aria-pressed", String(selected));
@@ -4904,15 +4930,16 @@
       el("manageDiningTables").onclick = () => {
         if (saving) return;
         el("channel").value = "dine";
+        el("dineTablesPanel").open = true;
         syncChannel();
         drawPayment();
-        el("dineTablesPanel").open = true;
         el("dineTablesPanel").scrollIntoView({
           behavior: "smooth",
           block: "center",
         });
       };
       el("dineTablesPanel").ontoggle = () => {
+        syncChannel();
         if (el("dineTablesPanel").open && !diningTableBusy)
           refreshDiningTables();
       };
