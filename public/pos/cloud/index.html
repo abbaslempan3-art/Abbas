@@ -4715,6 +4715,7 @@
         box.append(note);
         for (const [value, label] of [
           ["dine", "ทานที่ร้าน"],
+          ["grab", "เดลิเวอรี่"],
           ["take", "กลับบ้าน / รับเอง"],
           ["tour", "กรุ๊ปทัวร์"],
         ]) {
@@ -4724,6 +4725,8 @@
           button.textContent = label;
           button.onclick = () => {
             el("channel").value = value;
+            el("walkinOptions").classList.toggle("hidden", value !== "dine");
+            el("dineTablesPanel").open = false;
             syncChannel();
             drawPayment();
             el("posDialog").close();
