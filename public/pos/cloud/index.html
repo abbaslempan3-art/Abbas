@@ -2861,6 +2861,35 @@
           display: none;
         }
       }
+      /* Walk-in options appear only after the user enters the Walk-in menu. */
+      #walkinOptions {
+        margin: 0 0 16px;
+        padding: 14px;
+        border: 1px solid #efd5dc;
+        border-radius: 12px;
+        background: #fff5f7;
+      }
+      #walkinOptions > #manageDiningTables {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        min-height: 56px;
+        padding: 10px 16px;
+        background: #fff;
+        color: var(--red);
+        border: 1px solid var(--red);
+        font-size: 18px;
+      }
+      #walkinOptions > #manageDiningTables.active {
+        background: var(--red);
+        color: #fff;
+      }
+      #walkinOptions .channel-icon svg {
+        width: 28px;
+        height: 28px;
+      }
     </style>
   </head>
   <body>
@@ -3206,27 +3235,6 @@
                       </span>
                       <span>ที่ร้าน<small>Walk-in</small> </span>
                     </button>
-                    <button
-                      type="button"
-                      id="manageDiningTables"
-                      aria-pressed="false"
-                      aria-expanded="false"
-                      aria-controls="dineTablesPanel"
-                      aria-label="จัดการโต๊ะในออเดอร์หน้าร้าน"
-                    >
-                      <span
-                        class="channel-icon"
-                        data-icon="table"
-                        aria-hidden="true"
-                      ></span
-                      ><span class="table-control-label"
-                        >โต๊ะอาหาร<small>ออเดอร์หน้าร้าน</small></span
-                      ><span id="diningTableCount" class="dining-count"
-                        >0 โต๊ะ</span
-                      ><span class="table-control-chevron" aria-hidden="true"
-                        >⌄</span
-                      >
-                    </button>
                   </div>
                   <button data-channel="grab" class="" aria-pressed="false">
                     <span
@@ -3245,6 +3253,33 @@
                     >
                     </span>
                     <span>สั่งล่วงหน้า<small>Pickup</small> </span>
+                  </button>
+                </div>
+                <div
+                  id="walkinOptions"
+                  class="hidden"
+                  aria-label="เมนูย่อยที่ร้าน"
+                >
+                  <button
+                    type="button"
+                    id="manageDiningTables"
+                    aria-pressed="false"
+                    aria-expanded="false"
+                    aria-controls="dineTablesPanel"
+                    aria-label="จัดการโต๊ะในออเดอร์หน้าร้าน"
+                  >
+                    <span
+                      class="channel-icon"
+                      data-icon="table"
+                      aria-hidden="true"
+                    ></span
+                    ><span class="table-control-label"
+                      >โต๊ะอาหาร<small>ออเดอร์หน้าร้าน</small></span
+                    ><span id="diningTableCount" class="dining-count"
+                      >0 โต๊ะ</span
+                    ><span class="table-control-chevron" aria-hidden="true"
+                      >⌄</span
+                    >
                   </button>
                 </div>
                 <div class="channel-select-row hidden" id="deliveryChannelRow">
@@ -4017,6 +4052,10 @@
               .querySelectorAll("[data-channel]")
               .forEach((x) => x.classList.toggle("active", x === b));
             el("channel").value = b.dataset.channel;
+            el("walkinOptions").classList.toggle(
+              "hidden",
+              b.dataset.channel !== "dine",
+            );
             el("dineTablesPanel").open = false;
             syncChannel();
             drawPayment();
@@ -4321,7 +4360,16 @@
       }
       function syncChannel() {
         const channel = el("channel").value;
-        if (channel !== "dine") el("dineTablesPanel").open = false;
+        if (channel !== "dine") {
+          el("dineTablesPanel").open = false;
+          el("walkinOptions").classList.add("hidden");
+        }
+        document
+          .querySelector('[data-channel="dine"]')
+          .setAttribute(
+            "aria-expanded",
+            String(!el("walkinOptions").classList.contains("hidden")),
+          );
         const tablesSelected = channel === "dine" && el("dineTablesPanel").open;
         el("manageDiningTables").classList.toggle("active", tablesSelected);
         el("manageDiningTables").classList.toggle("hidden", channel !== "dine");
