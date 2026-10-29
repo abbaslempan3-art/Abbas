@@ -2830,6 +2830,37 @@
           flex-wrap: wrap;
         }
       }
+      /* One table toggle contains its heading, live count and expanded state. */
+      #dineTablesPanel:not([open]) {
+        display: none;
+      }
+      #manageDiningTables .table-control-label {
+        min-width: 0;
+      }
+      #manageDiningTables .table-control-label small {
+        display: block;
+        font-size: 14px;
+      }
+      #manageDiningTables .dining-count {
+        flex-shrink: 0;
+        background: #fff;
+        color: var(--red);
+      }
+      #manageDiningTables[aria-expanded="true"] .table-control-chevron {
+        transform: rotate(180deg);
+      }
+      #manageDiningTables .table-control-chevron {
+        font-size: 20px;
+        line-height: 1;
+      }
+      @media (max-width: 760px) {
+        #sale .walkin-channel > #manageDiningTables {
+          gap: 4px;
+        }
+        #manageDiningTables .table-control-label small {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -3188,7 +3219,13 @@
                         data-icon="table"
                         aria-hidden="true"
                       ></span
-                      ><span>โต๊ะอาหาร<small>จัดการโต๊ะ</small></span>
+                      ><span class="table-control-label"
+                        >โต๊ะอาหาร<small>ออเดอร์หน้าร้าน</small></span
+                      ><span id="diningTableCount" class="dining-count"
+                        >0 โต๊ะ</span
+                      ><span class="table-control-chevron" aria-hidden="true"
+                        >⌄</span
+                      >
                     </button>
                   </div>
                   <button data-channel="grab" class="" aria-pressed="false">
@@ -3230,14 +3267,7 @@
                 </div>
 
                 <details id="dineTablesPanel" class="dining-panel">
-                  <summary>
-                    <span class="dining-heading"
-                      ><span data-icon="table" aria-hidden="true"></span
-                      ><span>โต๊ะอาหาร · ออเดอร์หน้าร้าน</span></span
-                    ><span id="diningTableCount" class="dining-count"
-                      >0 โต๊ะ</span
-                    >
-                  </summary>
+                  <summary class="hidden">รายการโต๊ะอาหาร</summary>
                   <div class="dining-body">
                     <div class="dining-toolbar">
                       <p>เลือกหมายเลขโต๊ะ 1–20 และจำนวนคนต่อโต๊ะ 1–20 คน</p>
@@ -4987,14 +5017,17 @@
       };
       el("manageDiningTables").onclick = () => {
         if (saving) return;
+        const wasOpen =
+          el("channel").value === "dine" && el("dineTablesPanel").open;
         el("channel").value = "dine";
-        el("dineTablesPanel").open = true;
+        el("dineTablesPanel").open = !wasOpen;
         syncChannel();
         drawPayment();
-        el("dineTablesPanel").scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
+        if (el("dineTablesPanel").open)
+          el("dineTablesPanel").scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
       };
       el("dineTablesPanel").ontoggle = () => {
         syncChannel();
