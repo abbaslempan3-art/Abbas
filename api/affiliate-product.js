@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     const response = await fetch("https://api.firecrawl.dev/v2/scrape", {
       method: "POST",
       headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
-      body: JSON.stringify({ url, formats: ["markdown", "images"], onlyMainContent: false }),
+      body: JSON.stringify({ url, formats: ["markdown", "images"], onlyMainContent: false, location: { country: "TH", languages: ["th"] }, waitFor: 1500 }),
       signal: ctrl.signal
     });
     const payload = await response.json().catch(() => ({}));
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     const video = pickMedia(d.metadata?.video || d.video);
     const finalUrl = String(d.metadata?.sourceURL || d.metadata?.url || url);
     const combined = (title + " " + description).toLowerCase();
-    const genericShopee = /shopee thailand|ซื้อขายผ่านมือถือ หรือออนไลน์|shopee ประเทศไทย/.test(combined);
+    const genericShopee = /shopee thailand|ซื้อขายผ่านมือถือ หรือออนไลน์|shopee ประเทศไทย|mkt single page application|oops!!|page you are looking for cannot be found/.test(combined) || /\/error_page(?:[?#]|$)/.test(finalUrl);
     const meaningfulProduct = !genericShopee && (title.length > 15 || description.length > 80);
     if (!meaningfulProduct) return res.status(422).json({
       error: "Shopee ส่งหน้าเว็บทั่วไปกลับมา ไม่ใช่รายละเอียดสินค้าจริง",
