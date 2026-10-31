@@ -13,6 +13,19 @@ function safeHttps(raw) {
   try { const u = new URL(raw); return u.protocol === "https:" ? u.href : null; }
   catch { return null; }
 }
+async function resolveShortLink(url, signal) {
+  const host = new URL(url).hostname.toLowerCase();
+  if (!["s.shopee.co.th", "shope.ee", "shp.ee"].includes(host)) return url;
+  try {
+    const response = await fetch(url, {
+      method: "GET", redirect: "follow", signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; AffiliateAI/1.0)", "Accept-Language": "th-TH,th;q=0.9" }
+    });
+    const target = response.url || url;
+    if (isShopeeLink(target) && !/\/error_page(?:[?#]|$)/.test(target)) return target;
+  } catch { /* Short link may reject automated redirects; scrape original instead. */ }
+  return url;
+}
 function pickMedia(x) {
   if (typeof x === "string") return safeHttps(x);
   if (x && typeof x === "object") return safeHttps(x.url || x.src || "");
@@ -34,10 +47,11 @@ export default async function handler(req, res) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 25000);
   try {
+    const resolvedUrl = await resolveShortLink(url, ctrl.signal);
     const response = await fetch("https://api.firecrawl.dev/v2/scrape", {
       method: "POST",
       headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
-      body: JSON.stringify({ url, formats: ["markdown", "images"], onlyMainContent: false, location: { country: "TH", languages: ["th"] }, waitFor: 1500 }),
+      body: JSON.stringify({ url: resolvedUrl, formats: ["markdown", "images"], onlyMainContent: false, location: { country: "TH", languages: ["th"] }, waitFor: 1500 }),
       signal: ctrl.signal
     });
     const payload = await response.json().catch(() => ({}));
