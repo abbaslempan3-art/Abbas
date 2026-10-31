@@ -47,6 +47,16 @@ export default async function handler(req, res) {
     const title = String(d.metadata?.title || d.title || "").slice(0, 400);
     const description = String(d.metadata?.description || d.description || "").slice(0, 2000);
     const video = pickMedia(d.metadata?.video || d.video);
+    const finalUrl = String(d.metadata?.sourceURL || d.metadata?.url || url);
+    const combined = (title + " " + description).toLowerCase();
+    const genericShopee = /shopee thailand|ซื้อขายผ่านมือถือ หรือออนไลน์|shopee ประเทศไทย/.test(combined);
+    const meaningfulProduct = !genericShopee && (title.length > 15 || description.length > 80);
+    if (!meaningfulProduct) return res.status(422).json({
+      error: "Shopee ส่งหน้าเว็บทั่วไปกลับมา ไม่ใช่รายละเอียดสินค้าจริง",
+      detail: "โปรดเปิดลิงก์สั้นในเบราว์เซอร์ แล้วคัดลอก URL เต็มของหน้าสินค้ามาลองอีกครั้ง",
+      sourceUrl: finalUrl
+    });
+
     return res.status(200).json({ title, description, images, video, sourceUrl: url, videoAvailable: Boolean(video), note: "ข้อมูลสาธารณะที่อ่านได้จากหน้าสินค้า ไม่รับประกันข้อมูลครบถ้วน" });
   } catch (err) {
     return res.status(502).json({ error: err.name === "AbortError" ? "หมดเวลารอข้อมูลจาก Firecrawl" : "ไม่สามารถเชื่อมต่อ Firecrawl ได้" });
